@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using ImmersingHomework.Models;
@@ -38,9 +36,9 @@ public partial class AddHomeworkWindow : Window
     public HomeworkItem? GetHomework()
     {
         string? subject = SubjectPicker.GetSelectedSubject();
-        string? content = "";
-        List<string> tags = [];
-        
+        string? content = ContentInput?.Text?.Trim();
+        List<string> tags = TagPicker.GetSelectedTags();
+
         if (string.IsNullOrEmpty(subject) || string.IsNullOrEmpty(content))
         {
             return null;

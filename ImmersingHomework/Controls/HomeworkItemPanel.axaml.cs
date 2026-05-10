@@ -36,7 +36,7 @@ public partial class HomeworkItemPanel : UserControl
         }
         TagPanel.Children.Clear();
         
-        var colors = new List<IBrush>
+        var defaultColors = new List<IBrush>
         {
             new SolidColorBrush(Color.FromRgb(220, 240, 255)), 
             new SolidColorBrush(Color.FromRgb(220, 255, 230)), 
@@ -51,10 +51,19 @@ public partial class HomeworkItemPanel : UserControl
             var tagName = tags.ElementAt(i);
             if (!string.IsNullOrEmpty(tagName))
             {
+                IBrush tagColor = defaultColors[i % defaultColors.Count];
+                
+                // 在 AppSettings 中查找对应标签的颜色
+                var tagModel = AppSettings.Instance.Tags.FirstOrDefault(t => t.Name == tagName);
+                if (tagModel != null && tagModel.Color != null)
+                {
+                    tagColor = tagModel.Color;
+                }
+                
                 var tag = new Tag
                 {
                     TagName = tagName,
-                    TagColor = colors[i % colors.Count]
+                    TagColor = tagColor
                 };
                 TagPanel.Children.Add(tag);
             }

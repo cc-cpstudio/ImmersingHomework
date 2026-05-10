@@ -16,11 +16,11 @@
             </StackPanel>
             <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Vertical" Spacing="8">
                 <TextBlock Text="标签：" FontWeight="Bold" FontSize="32" />
-                <!--TODO-->
+                <controls:TagPicker x:Name="TagPicker" />
             </StackPanel>
             <StackPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" Orientation="Vertical" Spacing="8">
                 <TextBlock Text="作业内容：" FontWeight="Bold" FontSize="32" />
-                <!--TODO-->
+                <TextBox x:Name="ContentInput" AcceptsReturn="True" TextWrapping="Wrap" Height="200" />
             </StackPanel>
         </Grid>
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,20,0,0">

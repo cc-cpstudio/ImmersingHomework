@@ -8,9 +8,11 @@
         <entry key="ImmersingHomework/Controls/AddHomeworkWindow.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
         <entry key="ImmersingHomework/Controls/HomeworkItemPanel.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
         <entry key="ImmersingHomework/Controls/HomeworkPanel.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
+        <entry key="ImmersingHomework/Controls/PickableTag.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
         <entry key="ImmersingHomework/Controls/SubjectHomeworkPanel.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
         <entry key="ImmersingHomework/Controls/SubjectPicker.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
         <entry key="ImmersingHomework/Controls/Tag.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
+        <entry key="ImmersingHomework/Controls/TagPicker.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
         <entry key="ImmersingHomework/MainWindow.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
         <entry key="ImmersingHomework/Views/MainWindow.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
       </map>
