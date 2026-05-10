@@ -4,8 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ImmersingHomework.Controls.Tag"
-             Height="16" MinWidth="16">
-    <Border x:Name="TagBorder" CornerRadius="8">
-        <TextBlock x:Name="TagText" FontSize="12"/>
+             Height="36" MinWidth="70">
+    <Border x:Name="TagBorder" CornerRadius="18" Padding="20,4">
+        <TextBlock x:Name="TagText" FontSize="14" Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center"/>
     </Border>
 </UserControl>

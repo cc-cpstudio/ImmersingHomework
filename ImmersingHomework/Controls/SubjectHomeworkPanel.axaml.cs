@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
@@ -9,16 +10,50 @@ namespace ImmersingHomework.Controls;
 
 public partial class SubjectHomeworkPanel : UserControl
 {
-    public string Subject { get; set; }
-    public List<HomeworkItem>  HomeworkItems { get; set; }
-    
+    public static readonly StyledProperty<string> SubjectProperty =
+        AvaloniaProperty.Register<SubjectHomeworkPanel, string>(nameof(Subject));
+
+    public static readonly StyledProperty<List<HomeworkItem>> HomeworkItemsProperty =
+        AvaloniaProperty.Register<SubjectHomeworkPanel, List<HomeworkItem>>(nameof(HomeworkItems), new List<HomeworkItem>());
+
+    public string Subject
+    {
+        get => GetValue(SubjectProperty);
+        set => SetValue(SubjectProperty, value);
+    }
+
+    public List<HomeworkItem> HomeworkItems
+    {
+        get => GetValue(HomeworkItemsProperty);
+        set => SetValue(HomeworkItemsProperty, value);
+    }
+
     public SubjectHomeworkPanel()
     {
         InitializeComponent();
+        SubjectProperty.Changed.AddClassHandler<SubjectHomeworkPanel>((panel, e) => panel.Refresh());
+        HomeworkItemsProperty.Changed.AddClassHandler<SubjectHomeworkPanel>((panel, e) => panel.Refresh());
     }
 
     public void Refresh()
     {
-        SubjectText.Text = Subject;
+        if (!string.IsNullOrEmpty(Subject))
+        {
+            SubjectText.Text = Subject;
+        }
+        HomeworkItemPanels.Children.Clear();
+
+        var items = HomeworkItems ?? Enumerable.Empty<HomeworkItem>();
+        foreach (var item in items)
+        {
+            if (item != null)
+            {
+                var itemPanel = new HomeworkItemPanel
+                {
+                    HomeworkItem = item
+                };
+                HomeworkItemPanels.Children.Add(itemPanel);
+            }
+        }
     }
 }

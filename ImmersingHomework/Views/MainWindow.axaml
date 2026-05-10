@@ -3,12 +3,13 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:fa="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
+        xmlns:controls="clr-namespace:ImmersingHomework.Controls"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ImmersingHomework.Views.MainWindow"
-        Title="ImmersingHomework"
+        Title="ImmersingHomework" Background="#ECECEC"
         RequestedThemeVariant="Light">
         <Grid RowDefinitions="*,Auto" Margin="16">
-                <fa:FAFrame Grid.Row="0" Grid.Column="0" />
+                <controls:HomeworkPanel x:Name="HomeworkPanel" Grid.Row="0" Grid.Column="0" />
                 <Grid Grid.Row="1" RowDefinitions="*" ColumnDefinitions="Auto,*,Auto,*,Auto">
                         <Button Grid.Column="0" Width="60" Height="60" CornerRadius="30">
                                 <fa:FASymbolIcon Symbol="FullScreenMinimize" FontSize="24"/>
