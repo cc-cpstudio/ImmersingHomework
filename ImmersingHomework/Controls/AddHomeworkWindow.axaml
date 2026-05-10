@@ -1,0 +1,31 @@
+<Window xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:ImmersingHomework.Controls"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ImmersingHomework.Controls.AddHomeworkWindow"
+             Title="ImmersingHomework - 添加作业项"
+             Width="800" Height="450"
+             RequestedThemeVariant="Light">
+    <Grid RowDefinitions="*,Auto" Margin="20">
+        <Grid Grid.Row="0" RowDefinitions="Auto,*" ColumnDefinitions="*,*" RowSpacing="8" ColumnSpacing="8">
+            <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Vertical" Spacing="8">
+                <TextBlock Text="科目：" FontWeight="Bold" FontSize="32" />
+                <controls:SubjectPicker x:Name="SubjectPicker" />
+            </StackPanel>
+            <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Vertical" Spacing="8">
+                <TextBlock Text="标签：" FontWeight="Bold" FontSize="32" />
+                <!--TODO-->
+            </StackPanel>
+            <StackPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" Orientation="Vertical" Spacing="8">
+                <TextBlock Text="作业内容：" FontWeight="Bold" FontSize="32" />
+                <!--TODO-->
+            </StackPanel>
+        </Grid>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,20,0,0">
+            <Button x:Name="OkButton" Content="确定" Width="100" Click="OkButton_OnClick" />
+            <Button x:Name="CancelButton" Content="取消" Width="100" Click="CancelButton_OnClick" />
+        </StackPanel>
+    </Grid>
+</Window>

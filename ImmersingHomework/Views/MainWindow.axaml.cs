@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using FluentAvalonia.UI.Controls;
+using ImmersingHomework.Controls;
 using ImmersingHomework.Models;
 using ImmersingHomework.Services;
 
@@ -75,5 +77,19 @@ public partial class MainWindow : Window
         Date = Calendar.SelectedDate.HasValue
             ? DateOnly.FromDateTime(Calendar.SelectedDate.Value)
             : Date;
+    }
+
+    private async void AddHomeworkButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        var dialog = new AddHomeworkWindow();
+        var result = await dialog.ShowDialog<bool>(this);
+        
+        if (result && dialog.Result != null)
+        {
+            var currentHomework = _storageService.Load(Date) ?? new Homework(Date, []);
+            currentHomework.AddHomeworkItem(dialog.Result);
+            _storageService.Save(currentHomework);
+            HomeworkPanel.Refresh();
+        }
     }
 }
