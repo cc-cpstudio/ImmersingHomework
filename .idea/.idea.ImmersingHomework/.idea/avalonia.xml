@@ -6,6 +6,7 @@
         <entry key="ImmersingHomework/App.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
         <entry key="ImmersingHomework/Controls/AddHomeworkDialog.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
         <entry key="ImmersingHomework/Controls/AddHomeworkWindow.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
+        <entry key="ImmersingHomework/Controls/HomeworkContentInput.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
         <entry key="ImmersingHomework/Controls/HomeworkItemPanel.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
         <entry key="ImmersingHomework/Controls/HomeworkPanel.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
         <entry key="ImmersingHomework/Controls/PickableTag.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
