@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ImmersingHomework.Models;
 
@@ -36,6 +37,8 @@ public class Homework
 
     public List<HomeworkItem> GetHomeworkItemsByTags(List<string> tags)
     {
-        throw new NotImplementedException();
+        return HomeworkItems.Where(item => 
+            item.Tags != null && 
+            tags.Any(tag => item.Tags.Contains(tag))).ToList();
     }
 }
