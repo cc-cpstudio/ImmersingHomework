@@ -16,6 +16,10 @@ public partial class MainWindow : Window
     
     private event Action<DateOnly> DateChanged;
     
+    public event EventHandler? WindowMinimized;
+    public event EventHandler? WindowActivated;
+    public event EventHandler? WindowDeactivated;
+    
     public DateOnly Date
     {
         get => _date;
@@ -39,6 +43,9 @@ public partial class MainWindow : Window
         Date = DateOnly.FromDateTime(DateTime.Now);
         
         CalendarPopup.PlacementTarget = DateButton;
+        
+        this.Activated += (s, e) => WindowActivated?.Invoke(this, EventArgs.Empty);
+        this.Deactivated += (s, e) => WindowDeactivated?.Invoke(this, EventArgs.Empty);
         
         CreateSampleData();
     }
@@ -91,5 +98,10 @@ public partial class MainWindow : Window
             _storageService.Save(currentHomework);
             HomeworkPanel.Refresh();
         }
+    }
+
+    private void MinimizeButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        WindowMinimized?.Invoke(this, EventArgs.Empty);
     }
 }
