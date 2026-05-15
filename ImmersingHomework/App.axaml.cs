@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using ImmersingHomework.Abstractions;
+using ImmersingHomework.Services.Platforms;
 using ImmersingHomework.Views;
 
 namespace ImmersingHomework;
@@ -11,6 +13,7 @@ public partial class App : Application
 {
     private MainWindow? _mainWindow;
     private FloatingButtonWindow? _floatingButtonWindow;
+    private PlatformServiceBase? _platformService;
     
     public override void Initialize()
     {
@@ -21,8 +24,18 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            _platformService = CreatePlatformService();
+            
             _mainWindow = new MainWindow();
             _floatingButtonWindow = new FloatingButtonWindow();
+            
+            if (_platformService != null)
+            {
+                _platformService.SetTopmost(_floatingButtonWindow);
+                _platformService.DisableFocus(_floatingButtonWindow);
+                _platformService.HideFromTaskbar(_floatingButtonWindow);
+                _platformService.HideFromAltTab(_floatingButtonWindow);
+            }
             
             desktop.MainWindow = _mainWindow;
             
@@ -38,6 +51,36 @@ public partial class App : Application
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private PlatformServiceBase CreatePlatformService()
+    {
+        if (OperatingSystem.IsWindows())
+            return new WindowsPlatformService();
+        if (OperatingSystem.IsMacOS())
+            return new MacOSPlatformService();
+        if (OperatingSystem.IsLinux())
+        {
+            var xdgSession = Environment.GetEnvironmentVariable("XDG_SESSION_TYPE");
+            if (!string.IsNullOrEmpty(xdgSession))
+            {
+                if (xdgSession.Equals("x11", StringComparison.OrdinalIgnoreCase))
+                    return new X11PlatformService();
+                if (xdgSession.Equals("wayland", StringComparison.OrdinalIgnoreCase))
+                    return new WaylandPlatformService();
+            }
+            
+            var waylandDisplay = Environment.GetEnvironmentVariable("WAYLAND_DISPLAY");
+            if (!string.IsNullOrEmpty(waylandDisplay))
+                return new WaylandPlatformService();
+            
+            var display = Environment.GetEnvironmentVariable("DISPLAY");
+            if (!string.IsNullOrEmpty(display))
+                return new X11PlatformService();
+            
+            return new X11PlatformService(); // 默认使用 X11
+        }
+        throw new PlatformNotSupportedException();
     }
 
     private async void MainWindow_WindowMinimized(object? sender, EventArgs e)

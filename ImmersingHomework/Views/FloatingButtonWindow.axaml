@@ -11,7 +11,6 @@
         CanResize="False"
         SystemDecorations="None"
         Background="Transparent"
-        Topmost="True"
         WindowState="Normal">
     <Border Background="#FF2196F3"
             CornerRadius="8"
