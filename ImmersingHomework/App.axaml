@@ -8,4 +8,21 @@
     <Application.Styles>
         <fa:FluentAvaloniaTheme />
     </Application.Styles>
+             
+    <TrayIcon.Icons>
+        <TrayIcons>
+            <TrayIcon>
+                <TrayIcon.Menu>
+                    <NativeMenu>
+                        <NativeMenuItem Header="显示主窗口"/>
+                        <NativeMenuItem Header="显示/隐藏浮窗"/>
+                        <NativeMenuItem Header="打开设置窗口"/>
+                        <NativeMenuItemSeparator/>
+                        <NativeMenuItem Header="重启"/>
+                        <NativeMenuItem Header="退出"/>
+                    </NativeMenu>
+                </TrayIcon.Menu>
+            </TrayIcon>
+        </TrayIcons>
+    </TrayIcon.Icons>
 </Application>

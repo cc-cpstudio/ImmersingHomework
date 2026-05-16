@@ -15,6 +15,7 @@ public partial class FloatingButtonWindow : Window
     private Point _dragStartPoint;
     private PixelPoint _dragStartWindowPosition;
     private const double DragThreshold = 5; // 拖动阈值，超过此距离才认为是拖动
+    private const double SnapThreshold = 30; // 边缘吸附阈值
     
     public event EventHandler? FloatingButtonClicked;
     
@@ -85,9 +86,33 @@ public partial class FloatingButtonWindow : Window
                 _hasMoved = true;
             }
             
-            Position = new PixelPoint(
-                _dragStartWindowPosition.X + (int)delta.X,
-                _dragStartWindowPosition.Y + (int)delta.Y);
+            var newX = _dragStartWindowPosition.X + (int)delta.X;
+            var newY = _dragStartWindowPosition.Y + (int)delta.Y;
+            
+            // 获取屏幕尺寸并应用边界限制和边缘吸附
+            if (Screens.Primary != null)
+            {
+                var screenBounds = Screens.Primary.Bounds;
+                var windowWidth = (int)Bounds.Width;
+                var windowHeight = (int)Bounds.Height;
+                
+                // 边界限制
+                newX = Math.Max(0, Math.Min(newX, screenBounds.Width - windowWidth));
+                newY = Math.Max(0, Math.Min(newY, screenBounds.Height - windowHeight));
+                
+                // 边缘吸附
+                if (newX < SnapThreshold)
+                    newX = 0;
+                else if (newX > screenBounds.Width - windowWidth - SnapThreshold)
+                    newX = screenBounds.Width - windowWidth;
+                
+                if (newY < SnapThreshold)
+                    newY = 0;
+                else if (newY > screenBounds.Height - windowHeight - SnapThreshold)
+                    newY = screenBounds.Height - windowHeight;
+            }
+            
+            Position = new PixelPoint(newX, newY);
         }
     }
 

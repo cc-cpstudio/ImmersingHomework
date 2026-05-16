@@ -1,6 +1,8 @@
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using ImmersingHomework.Abstractions;
@@ -14,6 +16,8 @@ public partial class App : Application
     private MainWindow? _mainWindow;
     private FloatingButtonWindow? _floatingButtonWindow;
     private PlatformServiceBase? _platformService;
+    private IClassicDesktopStyleApplicationLifetime? _desktopLifetime;
+    private TrayIcon? _trayIcon;
     
     public override void Initialize()
     {
@@ -24,6 +28,7 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            _desktopLifetime = desktop;
             _platformService = CreatePlatformService();
             
             _mainWindow = new MainWindow();
@@ -48,9 +53,88 @@ public partial class App : Application
             
             _mainWindow.Show();
             _floatingButtonWindow.Show();
+            
+            SetupTrayIcon();
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private void SetupTrayIcon()
+    {
+        var trayIcons = TrayIcon.GetIcons(this);
+        if (trayIcons.Count > 0)
+        {
+            _trayIcon = trayIcons[0];
+            _trayIcon.ToolTipText = "ImmersingHomework";
+            
+            if (_trayIcon.Menu != null && _trayIcon.Menu.Items.Count > 0)
+            {
+                foreach (var item in _trayIcon.Menu.Items)
+                {
+                    if (item is NativeMenuItem menuItem)
+                    {
+                        menuItem.Click += TrayMenuItem_Click;
+                    }
+                }
+            }
+        }
+    }
+
+    private void TrayMenuItem_Click(object? sender, EventArgs e)
+    {
+        if (sender is NativeMenuItem menuItem)
+        {
+            switch (menuItem.Header)
+            {
+                case "显示主窗口":
+                    ShowMainWindow();
+                    break;
+                case "显示/隐藏浮窗":
+                    ToggleFloatingButton();
+                    break;
+                case "重启":
+                    RestartApplication();
+                    break;
+                case "退出":
+                    ExitApplication();
+                    break;
+            }
+        }
+    }
+
+    private void ToggleFloatingButton()
+    {
+        if (_floatingButtonWindow != null)
+        {
+            if (_floatingButtonWindow.IsVisible)
+            {
+                HideFloatingButton();
+            }
+            else
+            {
+                ShowFloatingButton();
+            }
+        }
+    }
+
+    private void RestartApplication()
+    {
+        if (_desktopLifetime != null)
+        {
+            var processName = Process.GetCurrentProcess().ProcessName;
+            var processPath = Environment.ProcessPath;
+            _desktopLifetime.Shutdown();
+            if (!string.IsNullOrEmpty(processPath))
+            {
+                Process.Start(processPath);
+            }
+        }
+    }
+
+    private void ExitApplication()
+    {
+        _desktopLifetime?.Shutdown();
     }
 
     private PlatformServiceBase CreatePlatformService()

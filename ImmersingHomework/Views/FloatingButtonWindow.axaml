@@ -9,9 +9,12 @@
         Width="88"
         Height="88"
         CanResize="False"
-        SystemDecorations="None"
+        WindowDecorations="None"
         Background="Transparent"
-        WindowState="Normal">
+        WindowState="Normal"
+        Focusable="False"
+        ShowActivated="False"
+        ShowInTaskbar="False">
     <Border Background="#FF2196F3"
             CornerRadius="8"
             BoxShadow="0 4 20 0 rgba(0,0,0,0.2)">
