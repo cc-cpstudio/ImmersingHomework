@@ -5,16 +5,18 @@
              xmlns:fa="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ImmersingHomework.Views.SettingsPages.BasicSettingsPage">
-    <StackPanel Orientation="Vertical" Spacing="8" Margin="12 12 12 0">
-        <TextBlock Text="基础设置" FontSize="36" FontWeight="Bold"/>
-        <TextBlock Text="设置软件的基本行为。" FontSize="18"/>
-        <fa:FASettingsExpanderItem Content="开机自启动" Description="在计算机开机后自动启动本软件。">
-            <fa:FASettingsExpanderItem.IconSource>
-                <fa:FASymbolIconSource Symbol="Star"/>
-            </fa:FASettingsExpanderItem.IconSource>
-            <fa:FASettingsExpanderItem.Footer>
-                <ToggleSwitch OnContent="" OffContent=""/>
-            </fa:FASettingsExpanderItem.Footer>
-        </fa:FASettingsExpanderItem>
-    </StackPanel>
+    <ScrollViewer>
+        <StackPanel Orientation="Vertical" Spacing="8" Margin="12 12 12 0">
+            <TextBlock Text="基础设置" FontSize="36" FontWeight="Bold"/>
+            <TextBlock Text="设置软件的基本行为。" FontSize="18"/>
+            <fa:FASettingsExpanderItem Content="开机自启动" Description="在计算机开机后自动启动本软件。">
+                <fa:FASettingsExpanderItem.IconSource>
+                    <fa:FASymbolIconSource Symbol="Star"/>
+                </fa:FASettingsExpanderItem.IconSource>
+                <fa:FASettingsExpanderItem.Footer>
+                    <ToggleSwitch OnContent="" OffContent=""/>
+                </fa:FASettingsExpanderItem.Footer>
+            </fa:FASettingsExpanderItem>
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

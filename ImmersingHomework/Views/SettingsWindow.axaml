@@ -6,7 +6,7 @@
         xmlns:wnd="clr-namespace:FluentAvalonia.UI.Windowing;assembly=FluentAvalonia"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ImmersingHomework.Views.SettingsWindow"
-        Title="设置">
+        Title="设置" RequestedThemeVariant="Light">
     <Grid>
         <fa:FANavigationView x:Name="NavigationView" PaneDisplayMode="Auto" IsSettingsVisible="False" SelectionChanged="NavigationView_SelectionChanged">
             <fa:FANavigationView.MenuItems>
