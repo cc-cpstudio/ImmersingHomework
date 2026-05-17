@@ -5,6 +5,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using ImmersingHomework.Abstractions;
 using ImmersingHomework.Services.Platforms;
 using ImmersingHomework.Views;
@@ -15,6 +16,7 @@ public partial class App : Application
 {
     private MainWindow? _mainWindow;
     private FloatingButtonWindow? _floatingButtonWindow;
+    private SettingsWindow? _settingsWindow;
     private PlatformServiceBase? _platformService;
     private IClassicDesktopStyleApplicationLifetime? _desktopLifetime;
     private TrayIcon? _trayIcon;
@@ -22,6 +24,11 @@ public partial class App : Application
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
+        
+        // 设置全局默认字体
+        var harmonyFont = new FontFamily("avares://ImmersingHomework/Assets/Fonts/HarmonyOS_SansSC_Regular.ttf#HarmonyOS Sans SC");
+        Resources["ContentControlThemeFontFamily"] = harmonyFont;
+        Resources["FontFamily"] = harmonyFont;
     }
 
     public override void OnFrameworkInitializationCompleted()
@@ -93,6 +100,9 @@ public partial class App : Application
                 case "显示/隐藏浮窗":
                     ToggleFloatingButton();
                     break;
+                case "打开设置窗口":
+                    OpenSettingsWindow();
+                    break;
                 case "重启":
                     RestartApplication();
                     break;
@@ -100,6 +110,21 @@ public partial class App : Application
                     ExitApplication();
                     break;
             }
+        }
+    }
+
+    private void OpenSettingsWindow()
+    {
+        if (_settingsWindow == null)
+        {
+            _settingsWindow = new SettingsWindow();
+            _settingsWindow.Closed += (s, e) => _settingsWindow = null;
+            _settingsWindow.Show();
+        }
+        else
+        {
+            _settingsWindow.Activate();
+            _settingsWindow.Show();
         }
     }
 

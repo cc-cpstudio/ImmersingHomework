@@ -5,13 +5,30 @@
              RequestedThemeVariant="Default">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
+    <Application.Resources>
+        <FontFamily x:Key="HarmonyOSSansSC">avares://ImmersingHomework/Assets/Fonts/HarmonyOS_SansSC_Regular.ttf#HarmonyOS Sans SC</FontFamily>
+    </Application.Resources>
+
     <Application.Styles>
         <fa:FluentAvaloniaTheme />
+        
+        <Style Selector="Window">
+            <Setter Property="FontFamily" Value="{StaticResource HarmonyOSSansSC}" />
+        </Style>
+        <Style Selector="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource HarmonyOSSansSC}" />
+        </Style>
+        <Style Selector="Button">
+            <Setter Property="FontFamily" Value="{StaticResource HarmonyOSSansSC}" />
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="FontFamily" Value="{StaticResource HarmonyOSSansSC}" />
+        </Style>
     </Application.Styles>
              
     <TrayIcon.Icons>
         <TrayIcons>
-            <TrayIcon>
+            <TrayIcon Icon="avares://ImmersingHomework/Assets/icon.png">
                 <TrayIcon.Menu>
                     <NativeMenu>
                         <NativeMenuItem Header="显示主窗口"/>
