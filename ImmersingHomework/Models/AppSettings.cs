@@ -12,5 +12,7 @@ public class AppSettings
     
     public bool FirstLaunch { get; set; } = true;
     
-    public bool LaunchAtStartup { get; set; } = true;
+    public ObservableProperty<bool> LaunchAtStartup { get; set; } = new(false);
+    
+    public ObservableProperty<bool> EnableClassIslandIPCService { get; set; } = new(false);
 }

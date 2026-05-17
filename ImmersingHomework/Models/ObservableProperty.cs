@@ -17,4 +17,9 @@ public class ObservableProperty<T>
     }
     
     public event Action<T?> ValueChanged;
+
+    public ObservableProperty(T? value)
+    {
+        _value = value;
+    }
 }
