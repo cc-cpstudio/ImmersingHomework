@@ -6,9 +6,9 @@
         xmlns:wnd="clr-namespace:FluentAvalonia.UI.Windowing;assembly=FluentAvalonia"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ImmersingHomework.Views.SettingsWindow"
-        Title="SettingsWindow">
+        Title="设置">
     <Grid>
-        <fa:FANavigationView x:Name="NavigationView" PaneDisplayMode="Auto" IsSettingsVisible="False">
+        <fa:FANavigationView x:Name="NavigationView" PaneDisplayMode="Auto" IsSettingsVisible="False" SelectionChanged="NavigationView_SelectionChanged">
             <fa:FANavigationView.MenuItems>
                 <fa:FANavigationViewItem Content="基础设置" Tag="Basic">
                     <fa:FANavigationViewItem.IconSource>
@@ -26,6 +26,14 @@
                     </fa:FANavigationViewItem.IconSource>
                 </fa:FANavigationViewItem>
             </fa:FANavigationView.MenuItems>
+            <fa:FANavigationView.FooterMenuItems>
+                <fa:FANavigationViewItem Content="关于软件" Tag="About">
+                    <fa:FANavigationViewItem.IconSource>
+                        <fa:FASymbolIconSource Symbol="MoreVertical" />
+                    </fa:FANavigationViewItem.IconSource>
+                </fa:FANavigationViewItem>
+            </fa:FANavigationView.FooterMenuItems>
+            <fa:FAFrame x:Name="ContentFrame" />
         </fa:FANavigationView>
     </Grid>
 </wnd:FAAppWindow>
