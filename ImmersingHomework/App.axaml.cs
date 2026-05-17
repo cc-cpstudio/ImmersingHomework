@@ -7,6 +7,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using ImmersingHomework.Abstractions;
+using ImmersingHomework.Models;
 using ImmersingHomework.Services.Platforms;
 using ImmersingHomework.Views;
 
@@ -33,6 +34,8 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        AppSettings.Instance.Initialize();
+        
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             _desktopLifetime = desktop;
