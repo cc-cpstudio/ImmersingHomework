@@ -12,7 +12,7 @@
                 <TextBlock x:Name="ContentText" FontSize="24"/>
                 <WrapPanel x:Name="TagPanel" ItemSpacing="8" LineSpacing="4"/>
             </StackPanel>
-            <Button Grid.Row="0" Grid.Column="1" Width="48" Height="48" CornerRadius="24" BorderThickness="0" Background="Transparent">
+            <Button x:Name="MoreButton" Grid.Row="0" Grid.Column="1" Width="48" Height="48" CornerRadius="24" BorderThickness="0" Background="Transparent" Click="MoreButton_OnClick">
                 <fa:FASymbolIcon Symbol="MoreVertical" FontSize="16"/>
             </Button>
         </Grid>

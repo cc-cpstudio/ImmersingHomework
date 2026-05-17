@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using ImmersingHomework.Models;
@@ -20,10 +21,17 @@ public partial class HomeworkItemPanel : UserControl
         set => SetValue(HomeworkItemProperty, value);
     }
 
+    public event Action<HomeworkItem>? EditRequested;
+
     public HomeworkItemPanel()
     {
         InitializeComponent();
         HomeworkItemProperty.Changed.AddClassHandler<HomeworkItemPanel>((panel, e) => panel.UpdatePanel());
+    }
+
+    private void MoreButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        EditRequested?.Invoke(HomeworkItem);
     }
 
     private void UpdatePanel()

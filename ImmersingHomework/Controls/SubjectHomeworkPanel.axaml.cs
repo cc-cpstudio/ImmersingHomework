@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
@@ -28,6 +29,8 @@ public partial class SubjectHomeworkPanel : UserControl
         set => SetValue(HomeworkItemsProperty, value);
     }
 
+    public event Action<HomeworkItem>? EditRequested;
+
     public SubjectHomeworkPanel()
     {
         InitializeComponent();
@@ -52,6 +55,7 @@ public partial class SubjectHomeworkPanel : UserControl
                 {
                     HomeworkItem = item
                 };
+                itemPanel.EditRequested += (homeworkItem) => EditRequested?.Invoke(homeworkItem);
                 HomeworkItemPanels.Children.Add(itemPanel);
             }
         }

@@ -10,7 +10,7 @@ using ImmersingHomework.Services;
 
 namespace ImmersingHomework.Controls;
 
-public partial class HomeworkPanel : UserControl
+public partial class  HomeworkPanel : UserControl
 {
     public static readonly StyledProperty<DateOnly> DateProperty =
         AvaloniaProperty.Register<HomeworkPanel, DateOnly>(nameof(Date));
@@ -86,6 +86,7 @@ public partial class HomeworkPanel : UserControl
                                 Subject = subject,
                                 HomeworkItems = subjectItems
                             };
+                            subjectPanel.EditRequested += OnEditRequested;
                             SubjectHomeworkPanels.Children.Add(subjectPanel);
                             hasHomework = true;
                         }
@@ -97,6 +98,37 @@ public partial class HomeworkPanel : UserControl
         if (NoHomeworkText != null)
         {
             NoHomeworkText.IsVisible = !hasHomework;
+        }
+    }
+
+    private async void OnEditRequested(HomeworkItem item)
+    {
+        var window = TopLevel.GetTopLevel(this) as Window;
+        if (window == null) return;
+
+        var dialog = new AddHomeworkWindow(item);
+        var result = await dialog.ShowDialog<bool>(window);
+
+        if (result)
+        {
+            var currentHomework = _storageService.Load(Date) ?? new Homework(Date, []);
+            
+            if (dialog.IsDeleted)
+            {
+                currentHomework.RemoveHomeworkItem(item);
+            }
+            else if (dialog.Result != null)
+            {
+                var oldItem = currentHomework.GetHomeworkItem(item.Id);
+                if (oldItem != null)
+                {
+                    currentHomework.RemoveHomeworkItem(oldItem);
+                    currentHomework.AddHomeworkItem(dialog.Result);
+                }
+            }
+            
+            _storageService.Save(currentHomework);
+            Refresh();
         }
     }
 }

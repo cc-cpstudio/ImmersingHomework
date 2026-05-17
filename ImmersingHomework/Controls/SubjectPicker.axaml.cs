@@ -34,4 +34,17 @@ public partial class SubjectPicker : UserControl
         }
         return null;
     }
+
+    public void SetSelectedSubject(string? subjectName)
+    {
+        foreach (var subjectRadioButton in SubjectPanel.Children)
+        {
+            if (subjectRadioButton is not RadioButton subject) continue;
+            if (subject.Content?.ToString() == subjectName)
+            {
+                subject.IsChecked = true;
+                break;
+            }
+        }
+    }
 }
