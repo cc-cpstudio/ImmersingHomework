@@ -33,6 +33,9 @@ public partial class SettingsWindow : FAAppWindow
                 case "About":
                     ContentFrame.Navigate(typeof(AboutPage));
                     break;
+                case "Linkage":
+                    ContentFrame.Navigate(typeof(LinkageSettingsPage));
+                    break;
             }
         }
     }

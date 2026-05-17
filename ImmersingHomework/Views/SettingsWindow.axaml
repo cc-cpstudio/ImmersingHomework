@@ -25,6 +25,11 @@
                         <fa:FASymbolIconSource Symbol="Tag"/>
                     </fa:FANavigationViewItem.IconSource>
                 </fa:FANavigationViewItem>
+                <fa:FANavigationViewItem Content="联动设置" Tag="Linkage">
+                    <fa:FANavigationViewItem.IconSource>
+                        <fa:FASymbolIconSource Symbol="Link"/>
+                    </fa:FANavigationViewItem.IconSource>
+                </fa:FANavigationViewItem>
             </fa:FANavigationView.MenuItems>
             <fa:FANavigationView.FooterMenuItems>
                 <fa:FANavigationViewItem Content="关于软件" Tag="About">
