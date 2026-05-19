@@ -69,13 +69,24 @@ public partial class MainWindow : Window
 
     private async void AddHomeworkButton_OnClick(object? sender, RoutedEventArgs e)
     {
-        var dialog = new AddHomeworkWindow();
-        var result = await dialog.ShowDialog<bool>(this);
+        var control = new AddHomeworkWindow();
+        var dialog = new FAContentDialog()
+        {
+            Title = control.Title,
+            Content = control,
+            PrimaryButtonText = "确定",
+            CloseButtonText = "取消"
+        };
         
-        if (result && dialog.Result != null)
+        control.SetDialog(dialog);
+        dialog.PrimaryButtonClick += (s, args) => control.OnPrimaryButtonClick(args);
+        
+        var result = await dialog.ShowAsync(this);
+        
+        if (result == FAContentDialogResult.Primary && control.Result != null)
         {
             var currentHomework = _storageService.Load(Date) ?? new Homework(Date, []);
-            currentHomework.AddHomeworkItem(dialog.Result);
+            currentHomework.AddHomeworkItem(control.Result);
             _storageService.Save(currentHomework);
             HomeworkPanel.Refresh();
         }

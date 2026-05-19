@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using FluentAvalonia.UI.Controls;
 using ImmersingHomework.Models;
 using ImmersingHomework.Services;
 
@@ -106,24 +107,37 @@ public partial class  HomeworkPanel : UserControl
         var window = TopLevel.GetTopLevel(this) as Window;
         if (window == null) return;
 
-        var dialog = new AddHomeworkWindow(item);
-        var result = await dialog.ShowDialog<bool>(window);
+        var control = new AddHomeworkWindow(item);
+        var dialog = new FAContentDialog()
+        {
+            Title = control.Title,
+            Content = control,
+            PrimaryButtonText = "确定",
+            CloseButtonText = "取消",
+            SecondaryButtonText = control.SecondaryButtonText
+        };
+        
+        control.SetDialog(dialog);
+        dialog.PrimaryButtonClick += (s, args) => control.OnPrimaryButtonClick(args);
+        dialog.SecondaryButtonClick += (s, args) => control.OnSecondaryButtonClick();
+        
+        var result = await dialog.ShowAsync(window);
 
-        if (result)
+        if (result == FAContentDialogResult.Primary || result == FAContentDialogResult.Secondary)
         {
             var currentHomework = _storageService.Load(Date) ?? new Homework(Date, []);
             
-            if (dialog.IsDeleted)
+            if (control.IsDeleted)
             {
                 currentHomework.RemoveHomeworkItem(item);
             }
-            else if (dialog.Result != null)
+            else if (control.Result != null)
             {
                 var oldItem = currentHomework.GetHomeworkItem(item.Id);
                 if (oldItem != null)
                 {
                     currentHomework.RemoveHomeworkItem(oldItem);
-                    currentHomework.AddHomeworkItem(dialog.Result);
+                    currentHomework.AddHomeworkItem(control.Result);
                 }
             }
             

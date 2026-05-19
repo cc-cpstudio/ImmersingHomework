@@ -1,29 +1,33 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
-using Avalonia.Interactivity;
+using FluentAvalonia.UI.Controls;
 using ImmersingHomework.Models;
 
 namespace ImmersingHomework.Controls;
 
-public partial class AddHomeworkWindow : Window
+public partial class AddHomeworkWindow : UserControl
 {
     public HomeworkItem? Result { get; private set; }
     public bool IsDeleted { get; private set; }
     private readonly HomeworkItem? _existingItem;
+    private FAContentDialog? _dialog;
+
+    public string Title { get; private set; }
+    public string? SecondaryButtonText { get; private set; }
 
     public AddHomeworkWindow()
     {
         InitializeComponent();
-        Title = "ImmersingHomework - 添加作业项";
-        DeleteButton.IsVisible = false;
+        Title = "添加作业项";
+        SecondaryButtonText = null;
     }
 
     public AddHomeworkWindow(HomeworkItem existingItem) : this()
     {
         _existingItem = existingItem;
-        Title = "ImmersingHomework - 修改作业项";
-        DeleteButton.IsVisible = true;
+        Title = "修改作业项";
+        SecondaryButtonText = "删除";
         
         this.AttachedToVisualTree += (_, _) =>
         {
@@ -33,7 +37,12 @@ public partial class AddHomeworkWindow : Window
         };
     }
 
-    private void OkButton_OnClick(object? sender, RoutedEventArgs e)
+    public void SetDialog(FAContentDialog dialog)
+    {
+        _dialog = dialog;
+    }
+
+    public void OnPrimaryButtonClick(FAContentDialogButtonClickEventArgs args)
     {
         Result = GetHomework();
         if (Result != null)
@@ -45,25 +54,24 @@ public partial class AddHomeworkWindow : Window
                     Id = _existingItem.Id
                 };
             }
-            Close(true);
+            IsDeleted = false;
         }
         else
         {
-            Close(false);
+            args.Cancel = true;
         }
     }
 
-    private void CancelButton_OnClick(object? sender, RoutedEventArgs e)
-    {
-        Result = null;
-        Close(false);
-    }
-
-    private void DeleteButton_OnClick(object? sender, RoutedEventArgs e)
+    public void OnSecondaryButtonClick()
     {
         Result = null;
         IsDeleted = true;
-        Close(true);
+    }
+
+    public void OnCloseButtonClick()
+    {
+        Result = null;
+        IsDeleted = false;
     }
 
     public HomeworkItem? GetHomework()
