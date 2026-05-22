@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using Avalonia.Controls;
 using FluentAvalonia.UI.Controls;
 using ImmersingHomework.Models;
+using Serilog;
 
 namespace ImmersingHomework.Controls;
 
 public partial class AddHomeworkWindow : UserControl
 {
+    private readonly ILogger _logger = Log.ForContext<AddHomeworkWindow>();
     public HomeworkItem? Result { get; private set; }
     public bool IsDeleted { get; private set; }
     private readonly HomeworkItem? _existingItem;

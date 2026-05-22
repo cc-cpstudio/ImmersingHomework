@@ -8,11 +8,13 @@ using Avalonia.Markup.Xaml;
 using FluentAvalonia.UI.Controls;
 using ImmersingHomework.Models;
 using ImmersingHomework.Services;
+using Serilog;
 
 namespace ImmersingHomework.Controls;
 
 public partial class  HomeworkPanel : UserControl
 {
+    private readonly ILogger _logger = Log.ForContext<HomeworkPanel>();
     public static readonly StyledProperty<DateOnly> DateProperty =
         AvaloniaProperty.Register<HomeworkPanel, DateOnly>(nameof(Date));
 

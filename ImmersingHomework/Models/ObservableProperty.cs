@@ -1,9 +1,11 @@
 using System;
+using Serilog;
 
 namespace ImmersingHomework.Models;
 
 public class ObservableProperty<T>
 {
+    private readonly ILogger _logger = Log.ForContext<ObservableProperty<T>>();
     private T? _value;
 
     public T? Value

@@ -2,11 +2,13 @@ using System;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using ImmersingHomework.Abstractions;
+using Serilog;
 
 namespace ImmersingHomework.Services.Platforms;
 
 public class WindowsPlatformService : PlatformServiceBase
 {
+    private readonly ILogger _logger = Log.ForContext<WindowsPlatformService>();
     [DllImport("user32.dll")]
     private static extern bool SetForegroundWindow(IntPtr hWnd);
     

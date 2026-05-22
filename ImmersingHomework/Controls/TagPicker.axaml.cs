@@ -3,11 +3,13 @@ using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using ImmersingHomework.Models;
+using Serilog;
 
 namespace ImmersingHomework.Controls;
 
 public partial class TagPicker : UserControl
 {
+    private readonly ILogger _logger = Log.ForContext<TagPicker>();
     private readonly List<PickableTag> _pickableTags = [];
 
     public TagPicker()

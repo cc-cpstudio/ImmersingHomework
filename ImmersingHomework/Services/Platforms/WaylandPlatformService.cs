@@ -1,11 +1,13 @@
 using System;
 using Avalonia.Controls;
 using ImmersingHomework.Abstractions;
+using Serilog;
 
 namespace ImmersingHomework.Services.Platforms;
 
 public class WaylandPlatformService : PlatformServiceBase
 {
+    private readonly ILogger _logger = Log.ForContext<WaylandPlatformService>();
     public override void SetTopmost(Window window, bool enable = true)
     {
         window.Opened += (sender, e) =>

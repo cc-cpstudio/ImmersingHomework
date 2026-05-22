@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Media;
 using ImmersingHomework.Services;
+using Serilog;
 
 namespace ImmersingHomework.Models;
 
@@ -10,6 +11,7 @@ public class AppSettings
 {
     public static AppSettings Instance { get; } = new AppSettings();
 
+    private readonly ILogger _logger = Log.ForContext<AppSettings>();
     private AppSettingsStorageService _storageService = new();
     private bool _isDirty;
 

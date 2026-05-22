@@ -4,11 +4,13 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using FluentAvalonia.UI.Controls;
 using ImmersingHomework.Models;
+using Serilog;
 
 namespace ImmersingHomework.Views.SettingsPages;
 
 public partial class SubjectSettingsPage : UserControl
 {
+    private readonly ILogger _logger = Log.ForContext<SubjectSettingsPage>();
     public SubjectSettingsPage()
     {
         InitializeComponent();

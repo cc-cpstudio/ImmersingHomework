@@ -6,6 +6,7 @@ using ClassIsland.Shared.IPC;
 using ClassIsland.Shared.IPC.Abstractions.Services;
 using dotnetCampus.Ipc.CompilerServices.GeneratedProxies;
 using ImmersingHomework.Models;
+using Serilog;
 
 namespace ImmersingHomework.Services;
 
@@ -13,6 +14,7 @@ public class ClassIslandService
 {
     public static ClassIslandService Instance { get; } = new ClassIslandService();
 
+    private readonly ILogger _logger = Log.ForContext<ClassIslandService>();
     public bool Initialized { get; init; } = false;
     
     private IpcClient _client = new IpcClient();

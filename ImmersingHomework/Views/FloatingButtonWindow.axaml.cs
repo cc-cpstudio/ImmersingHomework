@@ -5,11 +5,13 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using Serilog;
 
 namespace ImmersingHomework.Views;
 
 public partial class FloatingButtonWindow : Window
 {
+    private readonly ILogger _logger = Log.ForContext<FloatingButtonWindow>();
     private bool _isDragging;
     private bool _hasMoved;
     private Point _dragStartPoint;

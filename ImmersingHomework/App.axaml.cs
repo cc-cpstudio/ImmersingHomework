@@ -10,11 +10,13 @@ using ImmersingHomework.Abstractions;
 using ImmersingHomework.Models;
 using ImmersingHomework.Services.Platforms;
 using ImmersingHomework.Views;
+using Serilog;
 
 namespace ImmersingHomework;
 
 public partial class App : Application
 {
+    private readonly ILogger _logger = Log.ForContext<App>();
     private MainWindow? _mainWindow;
     private FloatingButtonWindow? _floatingButtonWindow;
     private SettingsWindow? _settingsWindow;

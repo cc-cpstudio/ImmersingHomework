@@ -7,11 +7,13 @@ using FluentAvalonia.UI.Controls;
 using ImmersingHomework.Controls;
 using ImmersingHomework.Models;
 using ImmersingHomework.Services;
+using Serilog;
 
 namespace ImmersingHomework.Views;
 
 public partial class MainWindow : Window
 {
+    private readonly ILogger _logger = Log.ForContext<MainWindow>();
     private DateOnly _date;
     
     private event Action<DateOnly> DateChanged;

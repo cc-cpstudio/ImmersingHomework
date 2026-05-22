@@ -4,11 +4,13 @@ using Avalonia.Markup.Xaml;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Windowing;
 using ImmersingHomework.Views.SettingsPages;
+using Serilog;
 
 namespace ImmersingHomework.Views;
 
 public partial class SettingsWindow : FAAppWindow
 {
+    private readonly ILogger _logger = Log.ForContext<SettingsWindow>();
     public SettingsWindow()
     {
         InitializeComponent();

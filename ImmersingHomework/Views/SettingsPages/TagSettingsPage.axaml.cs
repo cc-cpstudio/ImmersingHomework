@@ -8,11 +8,13 @@ using FluentAvalonia.UI.Controls;
 using ImmersingHomework.Controls;
 using ImmersingHomework.Models;
 using System.Collections.Generic;
+using Serilog;
 
 namespace ImmersingHomework.Views.SettingsPages;
 
 public partial class TagSettingsPage : UserControl
 {
+    private readonly ILogger _logger = Log.ForContext<TagSettingsPage>();
     private static readonly List<Color> PredefinedColors = new List<Color>
     {
         Color.FromRgb(220, 240, 255), // 浅蓝

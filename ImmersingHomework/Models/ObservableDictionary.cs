@@ -1,11 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Serilog;
 
 namespace ImmersingHomework.Models;
 
 public class ObservableDictionary<TK, TV> : IEnumerable<KeyValuePair<TK, TV>> where TK : notnull
 {
+    private readonly ILogger _logger = Log.ForContext<ObservableDictionary<TK, TV>>();
     private Dictionary<TK, TV> _dictionary = new();
 
     public event Action<TK, TV>? ItemAdded;

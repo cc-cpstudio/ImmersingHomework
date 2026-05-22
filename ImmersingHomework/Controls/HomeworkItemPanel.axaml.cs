@@ -7,11 +7,13 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using ImmersingHomework.Models;
+using Serilog;
 
 namespace ImmersingHomework.Controls;
 
 public partial class HomeworkItemPanel : UserControl
 {
+    private readonly ILogger _logger = Log.ForContext<HomeworkItemPanel>();
     public static readonly StyledProperty<HomeworkItem> HomeworkItemProperty =
         AvaloniaProperty.Register<HomeworkItemPanel, HomeworkItem>(nameof(HomeworkItem));
 

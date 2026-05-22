@@ -6,11 +6,13 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Metadata;
 using ImmersingHomework.Models;
+using Serilog;
 
 namespace ImmersingHomework.Controls;
 
 public partial class SubjectHomeworkPanel : UserControl
 {
+    private readonly ILogger _logger = Log.ForContext<SubjectHomeworkPanel>();
     public static readonly StyledProperty<string> SubjectProperty =
         AvaloniaProperty.Register<SubjectHomeworkPanel, string>(nameof(Subject));
 

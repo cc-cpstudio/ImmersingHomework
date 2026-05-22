@@ -2,11 +2,13 @@ using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Serilog;
 
 namespace ImmersingHomework.Controls;
 
 public partial class SubjectPicker : UserControl
 {
+    private readonly ILogger _logger = Log.ForContext<SubjectPicker>();
     public SubjectPicker()
     {
         InitializeComponent();

@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Serilog;
 
 namespace ImmersingHomework.Models;
 
 public class Homework
 {
+    private readonly ILogger _logger = Log.ForContext<Homework>();
     public DateOnly Date { get; init; }
     public List<HomeworkItem> HomeworkItems { get; set; }
 

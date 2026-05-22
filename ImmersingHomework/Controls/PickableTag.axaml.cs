@@ -2,11 +2,13 @@ using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Serilog;
 
 namespace ImmersingHomework.Controls;
 
 public partial class PickableTag : UserControl
 {
+    private readonly ILogger _logger = Log.ForContext<PickableTag>();
     public static readonly StyledProperty<string> TagNameProperty =
         AvaloniaProperty.Register<PickableTag, string>(nameof(TagName));
 

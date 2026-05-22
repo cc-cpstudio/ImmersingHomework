@@ -3,11 +3,13 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using ImmersingHomework.Models;
+using Serilog;
 
 namespace ImmersingHomework.Services;
 
 public class AppSettingsStorageService
 {
+    private readonly ILogger _logger = Log.ForContext<AppSettingsStorageService>();
     private string GetFilePath()
     {
         return Path.Combine(

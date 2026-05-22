@@ -1,11 +1,13 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Serilog;
 
 namespace ImmersingHomework.Controls;
 
 public partial class Tag : UserControl
 {
+    private readonly ILogger _logger = Log.ForContext<Tag>();
     public static readonly StyledProperty<string> TagNameProperty =
         AvaloniaProperty.Register<Tag, string>(nameof(TagName));
 

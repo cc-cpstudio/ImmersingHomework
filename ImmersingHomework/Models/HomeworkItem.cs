@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using Serilog;
 
 namespace ImmersingHomework.Models;
 
 public class HomeworkItem
 {
+    private readonly ILogger _logger = Log.ForContext<HomeworkItem>();
     public Guid Id { get; init; }
     public string Subject { get; set; }
     public string Content { get; set; }

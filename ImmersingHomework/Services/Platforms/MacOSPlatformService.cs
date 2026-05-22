@@ -2,11 +2,13 @@ using System;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using ImmersingHomework.Abstractions;
+using Serilog;
 
 namespace ImmersingHomework.Services.Platforms;
 
 public class MacOSPlatformService : PlatformServiceBase
 {
+    private readonly ILogger _logger = Log.ForContext<MacOSPlatformService>();
     [DllImport("/System/Library/Frameworks/AppKit.framework/AppKit")]
     private static extern void NSWindowSetLevel(IntPtr window, int level);
     
