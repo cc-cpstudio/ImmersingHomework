@@ -22,7 +22,11 @@ public class Homework
 
     public void RemoveHomeworkItem(HomeworkItem homeworkItem)
     {
-        HomeworkItems.Remove(homeworkItem);
+        var itemToRemove = HomeworkItems.Find(x => x.Id == homeworkItem.Id);
+        if (itemToRemove != null)
+        {
+            HomeworkItems.Remove(itemToRemove);
+        }
     }
 
     public HomeworkItem? GetHomeworkItem(Guid id)
