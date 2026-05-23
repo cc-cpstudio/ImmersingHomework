@@ -6,12 +6,14 @@ using ImmersingHomework.Models;
 using Serilog;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using Color = SixLabors.ImageSharp.Color;
 using PointF = SixLabors.ImageSharp.PointF;
 using RectangleF = SixLabors.ImageSharp.RectangleF;
+using IOPath = System.IO.Path;
 
 namespace ImmersingHomework.Services;
 
@@ -21,7 +23,10 @@ public class HomeworkImageService
     
     private const int ImageWidth = 384;
     private const int Margin = 12;
-    private const int Spacing = 12;
+    private const int Spacing = 48;
+    private const int TitleToSubjectSpacing = 24;
+    private const int ContentSpacing = 16;
+    private const int TagSpacing = 12;
     private const int TagHeight = 36;
     private const int TagMinWidth = 70;
     private const float TagPadding = 20;
@@ -36,37 +41,75 @@ public class HomeworkImageService
         try
         {
             _fontCollection = new FontCollection();
-            var fontPath = Path.Combine(AppContext.BaseDirectory, "Assets", "Fonts");
+            var fontPath = IOPath.Combine(AppContext.BaseDirectory, "Assets", "Fonts");
             
             if (Directory.Exists(fontPath))
             {
-                _fontCollection.Add(Path.Combine(fontPath, "HarmonyOS_SansSC_Bold.ttf"));
-                _fontCollection.Add(Path.Combine(fontPath, "HarmonyOS_SansSC_Medium.ttf"));
-                _fontCollection.Add(Path.Combine(fontPath, "HarmonyOS_SansSC_Regular.ttf"));
+                _fontCollection.Add(IOPath.Combine(fontPath, "HarmonyOS_SansSC_Bold.ttf"));
+                _fontCollection.Add(IOPath.Combine(fontPath, "HarmonyOS_SansSC_Medium.ttf"));
+                _fontCollection.Add(IOPath.Combine(fontPath, "HarmonyOS_SansSC_Regular.ttf"));
             }
             
-            var families = _fontCollection.Families.ToList();
-            if (families.Count > 0)
+            var familyName = "HarmonyOS Sans SC";
+            if (_fontCollection.TryGet(familyName, out var family))
             {
-                _fontBold = families[0].CreateFont(36, FontStyle.Bold);
-                _fontMedium = families[0].CreateFont(24, FontStyle.Bold);
-                _fontRegular = families[0].CreateFont(20, FontStyle.Regular);
+                _fontBold = family.CreateFont(36, FontStyle.Bold);
+                _fontMedium = family.CreateFont(24, FontStyle.Bold);
+                _fontRegular = family.CreateFont(20, FontStyle.Regular);
+                _logger.Information("字体初始化完成，使用 HarmonyOS Sans SC");
             }
             else
             {
-                _fontBold = SystemFonts.CreateFont("Microsoft YaHei", 36, FontStyle.Bold);
-                _fontMedium = SystemFonts.CreateFont("Microsoft YaHei", 24, FontStyle.Bold);
-                _fontRegular = SystemFonts.CreateFont("Microsoft YaHei", 20, FontStyle.Regular);
+                // Try fallback fonts
+                var fallbackFonts = new[] { "Microsoft YaHei", "Noto Sans CJK SC", "Noto Sans SC", "WenQuanYi Micro Hei", "SimHei", "Arial" };
+                FontFamily? fallbackFamily = null;
+                
+                foreach (var fontName in fallbackFonts)
+                {
+                    try
+                    {
+                        if (SystemFonts.TryGet(fontName, out var sysFamily))
+                        {
+                            fallbackFamily = sysFamily;
+                            _logger.Information("使用备用字体: {FontName}", fontName);
+                            break;
+                        }
+                    }
+                    catch
+                    {
+                        // Ignore and try next font
+                    }
+                }
+                
+                if (fallbackFamily != null)
+                {
+                    FontFamily ff = (FontFamily)fallbackFamily;
+                    _fontBold = ff.CreateFont(36, FontStyle.Bold);
+                    _fontMedium = ff.CreateFont(24, FontStyle.Bold);
+                    _fontRegular = ff.CreateFont(20, FontStyle.Regular);
+                }
+                else
+                {
+                    // Last resort: use any available system font
+                    var allFamilies = SystemFonts.Families.ToList();
+                    if (allFamilies.Count > 0)
+                    {
+                        _fontBold = allFamilies[0].CreateFont(36, FontStyle.Bold);
+                        _fontMedium = allFamilies[0].CreateFont(24, FontStyle.Bold);
+                        _fontRegular = allFamilies[0].CreateFont(20, FontStyle.Regular);
+                        _logger.Information("使用系统默认字体: {FontName}", allFamilies[0].Name);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("没有可用的字体");
+                    }
+                }
             }
-            
-            _logger.Information("字体初始化完成");
         }
         catch (Exception ex)
         {
-            _logger.Error(ex, "字体初始化失败，使用系统默认字体");
-            _fontBold = SystemFonts.CreateFont("Microsoft YaHei", 36, FontStyle.Bold);
-            _fontMedium = SystemFonts.CreateFont("Microsoft YaHei", 24, FontStyle.Bold);
-            _fontRegular = SystemFonts.CreateFont("Microsoft YaHei", 20, FontStyle.Regular);
+            _logger.Error(ex, "字体初始化失败");
+            throw;
         }
     }
 
@@ -88,10 +131,23 @@ public class HomeworkImageService
             image.Mutate(x => x.Fill(Color.White));
 
             var currentY = Margin;
+            object? previous = null;
             
             foreach (var element in elements)
             {
+                if (previous != null)
+                {
+                    currentY += GetSpacing(previous, element);
+                }
                 DrawElement(image, element, ref currentY);
+                previous = element;
+            }
+
+            // 创建输出目录
+            var directory = IOPath.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
             }
 
             image.SaveAsPng(outputPath);
@@ -113,7 +169,8 @@ public class HomeworkImageService
             Text = $"{homework.Date.Month}月{homework.Date.Day}日作业",
             Font = _fontBold!,
             LineHeight = 44,
-            IsLast = false
+            IsLast = false,
+            IsTitle = true
         });
 
         foreach (var subject in homework.HomeworkItems.GroupBy(x => x.Subject))
@@ -123,18 +180,21 @@ public class HomeworkImageService
                 Text = $"科目：{subject.Key}",
                 Font = _fontMedium!,
                 LineHeight = 29,
-                IsLast = false
+                IsLast = false,
+                IsSubject = true
             });
 
+            var itemIndex = 1;
             foreach (var item in subject)
             {
                 elements.Add(new TextElement
                 {
-                    Text = item.Content,
+                    Text = $"{itemIndex}. {item.Content}",
                     Font = _fontRegular!,
                     LineHeight = 24,
                     IsLast = false
                 });
+                itemIndex++;
 
                 if (item.Tags != null && item.Tags.Count > 0)
                 {
@@ -142,12 +202,13 @@ public class HomeworkImageService
                     foreach (var tagName in item.Tags)
                     {
                         var tagModel = AppSettings.Instance.Tags.FirstOrDefault(t => t.Name == tagName);
-                        if (tagModel != null)
+                        if (tagModel != null && tagModel.Color != null)
                         {
+                            var avaloniaColor = tagModel.Color.Color;
                             tagModels.Add(new TagElement
                             {
                                 Name = tagName,
-                                Color = Color.FromRgb(tagModel.Color.Color.R, tagModel.Color.Color.G, tagModel.Color.Color.B)
+                                Color = Color.FromRgb(avaloniaColor.R, avaloniaColor.G, avaloniaColor.B)
                             });
                         }
                         else
@@ -178,32 +239,54 @@ public class HomeworkImageService
         return elements;
     }
 
+    private static int GetSpacing(object previous, object current)
+    {
+        if (previous == null) return 0;
+
+        // 当天日期 → 科目标题：24
+        if (previous is TextElement prevText && prevText.IsTitle &&
+            current is TextElement currText && currText.IsSubject)
+        {
+            return TitleToSubjectSpacing;
+        }
+
+        // 内容 → 标签：12
+        if (previous is TextElement prevText2 && !prevText2.IsTitle && !prevText2.IsSubject && !prevText2.IsLast &&
+            current is TagGroupElement)
+        {
+            return TagSpacing;
+        }
+
+        // 其他所有间距都是16
+        return ContentSpacing;
+    }
+
     private static int CalculateTotalHeight(List<object> elements)
     {
-        var height = Margin * 2;
-        var hasPrevious = false;
+        var currentY = Margin;
+        object? previous = null;
 
         foreach (var element in elements)
         {
-            if (hasPrevious)
+            if (previous != null)
             {
-                height += Spacing;
+                currentY += GetSpacing(previous, element);
             }
 
             switch (element)
             {
                 case TextElement text:
-                    height += text.LineHeight;
+                    currentY += text.LineHeight;
                     break;
                 case TagGroupElement tagGroup:
-                    height += CalculateTagGroupHeight(tagGroup);
+                    currentY += CalculateTagGroupHeight(tagGroup);
                     break;
             }
 
-            hasPrevious = true;
+            previous = element;
         }
 
-        return height;
+        return currentY;
     }
 
     private static int CalculateTagGroupHeight(TagGroupElement tagGroup)
@@ -219,10 +302,10 @@ public class HomeworkImageService
                 rows++;
                 currentX = Margin;
             }
-            currentX += tagWidth + Spacing;
+            currentX += tagWidth + TagSpacing;
         }
 
-        return rows * TagHeight + (rows - 1) * Spacing;
+        return rows * TagHeight + (rows - 1) * TagSpacing;
     }
 
     private static float CalculateTagWidth(TagElement tag)
@@ -263,7 +346,7 @@ public class HomeworkImageService
             x = Margin;
         }
 
-        var y = currentY;
+        var y = currentY - textSize.Top;
         
         image.Mutate(ctx => ctx.DrawText(
             textElement.Text,
@@ -285,11 +368,11 @@ public class HomeworkImageService
             if (currentX + tagWidth > ImageWidth - Margin)
             {
                 currentX = Margin;
-                currentY += TagHeight + Spacing;
+                currentY += TagHeight + TagSpacing;
             }
 
             DrawTag(image, tag, currentX, currentY, tagWidth);
-            currentX += tagWidth + Spacing;
+            currentX += tagWidth + TagSpacing;
         }
 
         var tagGroupHeight = CalculateTagGroupHeight(tagGroup);
@@ -298,14 +381,26 @@ public class HomeworkImageService
 
     private static void DrawTag(Image<Rgba32> image, TagElement tag, float x, float y, float width)
     {
-        var rect = new RectangleF(x, y, width, TagHeight);
+        var radius = TagHeight / 2f;
+        var pathBuilder = new PathBuilder();
+        pathBuilder.MoveTo(new PointF(x + radius, y));
+        pathBuilder.LineTo(new PointF(x + width - radius, y));
+        pathBuilder.ArcTo(radius, radius, 0, false, true, new PointF(x + width, y + radius));
+        pathBuilder.LineTo(new PointF(x + width, y + TagHeight - radius));
+        pathBuilder.ArcTo(radius, radius, 0, false, true, new PointF(x + width - radius, y + TagHeight));
+        pathBuilder.LineTo(new PointF(x + radius, y + TagHeight));
+        pathBuilder.ArcTo(radius, radius, 0, false, true, new PointF(x, y + TagHeight - radius));
+        pathBuilder.LineTo(new PointF(x, y + radius));
+        pathBuilder.ArcTo(radius, radius, 0, false, true, new PointF(x + radius, y));
+        pathBuilder.CloseFigure();
+        var path = pathBuilder.Build();
         
-        image.Mutate(ctx => ctx.Fill(tag.Color, rect));
+        image.Mutate(ctx => ctx.Fill(tag.Color, path));
         
         var font = _fontRegular!.Family.CreateFont(14);
         var textSize = TextMeasurer.MeasureBounds(tag.Name, new TextOptions(font));
         var textX = x + (width - textSize.Width) / 2;
-        var textY = y + (TagHeight - textSize.Height) / 2;
+        var textY = y + (TagHeight - textSize.Height) / 2 - textSize.Top;
         
         image.Mutate(ctx => ctx.DrawText(tag.Name, font, Color.Black, new PointF(textX, textY)));
     }
@@ -317,6 +412,8 @@ internal class TextElement
     public Font Font { get; set; } = null!;
     public int LineHeight { get; set; }
     public bool IsLast { get; set; }
+    public bool IsSubject { get; set; }
+    public bool IsTitle { get; set; }
     public float? FontSize { get; set; }
     public Color? Color { get; set; }
 }
