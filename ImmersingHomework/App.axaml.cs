@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -23,6 +24,8 @@ public partial class App : Application
     private PlatformServiceBase? _platformService;
     private IClassicDesktopStyleApplicationLifetime? _desktopLifetime;
     private TrayIcon? _trayIcon;
+    
+    public static readonly HttpClient HttpClient = new();
     
     public override void Initialize()
     {

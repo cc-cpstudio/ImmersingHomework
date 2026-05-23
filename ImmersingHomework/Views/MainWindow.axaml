@@ -8,9 +8,10 @@
         x:Class="ImmersingHomework.Views.MainWindow"
         Title="ImmersingHomework" Background="#ECECEC"
         RequestedThemeVariant="Light">
-        <Grid RowDefinitions="*,Auto" Margin="16">
-                <controls:HomeworkPanel x:Name="HomeworkPanel" Grid.Row="0" Grid.Column="0" />
-                <Grid Grid.Row="1" RowDefinitions="*" ColumnDefinitions="Auto,*,Auto,*,Auto">
+        <Grid RowDefinitions="Auto,*,Auto" Margin="16">
+                <TextBlock x:Name="Hitokoto" Grid.Row="0" FontSize="24" Foreground="#AEAEAE" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 0 0 8"/>
+                <controls:HomeworkPanel x:Name="HomeworkPanel" Grid.Row="1"/>
+                <Grid Grid.Row="2" RowDefinitions="*" ColumnDefinitions="Auto,*,Auto,*,Auto">
                         <Button Grid.Column="0" x:Name="MinimizeButton" Width="60" Height="60" CornerRadius="30" Click="MinimizeButton_OnClick">
                                 <fa:FASymbolIcon Symbol="FullScreenMinimize" FontSize="24"/>
                         </Button>

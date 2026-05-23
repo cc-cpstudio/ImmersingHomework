@@ -4,10 +4,12 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Timers;
 using Avalonia.Controls;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
+using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using ImmersingHomework.Controls;
 using ImmersingHomework.Models;
@@ -20,6 +22,7 @@ public partial class MainWindow : Window
 {
     private readonly ILogger _logger = Log.ForContext<MainWindow>();
     private DateOnly _date;
+    private Timer _hitokotoTimer;
     
     private event Action<DateOnly> DateChanged;
     
@@ -62,6 +65,36 @@ public partial class MainWindow : Window
             _logger.Debug("窗口失活");
             WindowDeactivated?.Invoke(this, EventArgs.Empty);
         };
+
+        _logger.Debug("初始化 Hitokoto 定时器，间隔 5 秒");
+        _hitokotoTimer = new Timer(5000);
+        _hitokotoTimer.Elapsed += async (s, e) =>
+        {
+            _logger.Debug("Hitokoto 定时器触发，开始获取新的 Hitokoto");
+            HitokotoService.Hitokoto? hitokoto = await HitokotoService.GetHitokoto();
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                if (hitokoto is null)
+                {
+                    _logger.Debug("获取到的 Hitokoto 为空，使用默认文本");
+                    Hitokoto.Text = "咕咕嘎嘎！ —— programmer_cc";
+                }
+                else
+                {
+                    _logger.Debug("更新 Hitokoto 显示: {Sentence} —— {Author}", hitokoto.Value.Sentence, hitokoto.Value.Author);
+                    Hitokoto.Text = $"{hitokoto.Value.Sentence} —— {hitokoto.Value.Author}";
+                }
+            });
+        };
+        _hitokotoTimer.AutoReset = true;
+        Closing += (s, e) =>
+        {
+            _logger.Debug("窗口关闭，停止并释放 Hitokoto 定时器");
+            _hitokotoTimer.Stop();
+            _hitokotoTimer.Dispose();
+        };
+        _hitokotoTimer.Start();
+        _logger.Debug("Hitokoto 定时器已启动");
         
         HomeworkPanel.Refresh();
         _logger.Information("MainWindow 初始化完成");
