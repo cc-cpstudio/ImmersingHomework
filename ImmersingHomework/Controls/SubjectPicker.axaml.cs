@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using ImmersingHomework.Models;
 using Serilog;
 
 namespace ImmersingHomework.Controls;
@@ -13,11 +14,8 @@ public partial class SubjectPicker : UserControl
     {
         _logger.Debug("SubjectPicker 初始化");
         InitializeComponent();
-
-        List<string> subjects = ["语文", "数学", "英语", "物理"];
-        _logger.Debug("创建 {Count} 个默认科目", subjects.Count);
         
-        foreach (var subject in subjects)
+        foreach (var subject in AppSettings.Instance.Subjects)
         {
             SubjectPanel.Children.Add(new RadioButton()
             {
