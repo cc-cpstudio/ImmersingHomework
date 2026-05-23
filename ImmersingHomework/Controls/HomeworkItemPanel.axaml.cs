@@ -59,11 +59,11 @@ public partial class HomeworkItemPanel : UserControl
         
         var defaultColors = new List<IBrush>
         {
-            new SolidColorBrush(Color.FromRgb(220, 240, 255)), 
-            new SolidColorBrush(Color.FromRgb(220, 255, 230)), 
-            new SolidColorBrush(Color.FromRgb(255, 250, 220)), 
-            new SolidColorBrush(Color.FromRgb(255, 230, 255)), 
-            new SolidColorBrush(Color.FromRgb(255, 235, 230))
+            new SolidColorBrush(Avalonia.Media.Color.FromRgb(220, 240, 255)), 
+            new SolidColorBrush(Avalonia.Media.Color.FromRgb(220, 255, 230)), 
+            new SolidColorBrush(Avalonia.Media.Color.FromRgb(255, 250, 220)), 
+            new SolidColorBrush(Avalonia.Media.Color.FromRgb(255, 230, 255)), 
+            new SolidColorBrush(Avalonia.Media.Color.FromRgb(255, 235, 230))
         };
 
         var tags = HomeworkItem.Tags ?? Enumerable.Empty<string>();
@@ -78,9 +78,9 @@ public partial class HomeworkItemPanel : UserControl
                 
                 // 在 AppSettings 中查找对应标签的颜色
                 var tagModel = AppSettings.Instance.Tags.FirstOrDefault(t => t.Name == tagName);
-                if (tagModel != null && tagModel.Color != null)
+                if (tagModel != null)
                 {
-                    tagColor = tagModel.Color;
+                    tagColor = tagModel.Color.ToSolidColorBrush();
                 }
                 
                 var tag = new Tag

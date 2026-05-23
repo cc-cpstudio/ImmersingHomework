@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
-using Avalonia.Media;
 using Serilog;
+using Avalonia.Media;
 
 namespace ImmersingHomework.Models;
 
@@ -10,44 +10,45 @@ public class TagModel
     private readonly ILogger _logger = Log.ForContext<TagModel>();
     public string Name { get; set; } = string.Empty;
 
-    [JsonIgnore]
-    public SolidColorBrush Color { get; set; }
-
     [JsonPropertyName("Color")]
-    public string ColorHex
-    {
-        get
-        {
-            if (Color == null)
-                return "#00000000";
-            var color = Color.Color;
-            return $"#{color.A:X2}{color.R:X2}{color.G:X2}{color.B:X2}";
-        }
-        set
-        {
-            try
-            {
-                if (value.StartsWith("#"))
-                    value = value.Substring(1);
-                if (value.Length == 6) // RGB 没有 A
-                    value = "FF" + value;
-                var a = Convert.ToByte(value.Substring(0, 2), 16);
-                var r = Convert.ToByte(value.Substring(2, 2), 16);
-                var g = Convert.ToByte(value.Substring(4, 2), 16);
-                var b = Convert.ToByte(value.Substring(6, 2), 16);
-                Color = new SolidColorBrush(Avalonia.Media.Color.FromArgb(a, r, g, b));
-            }
-            catch
-            {
-                _logger.Warning("无法解析颜色值: {Value}", value);
-                Color = new SolidColorBrush(Colors.LightBlue);
-            }
-        }
-    }
+    public Color Color { get; set; }
     
     public TagModel()
     {
         _logger.Debug("TagModel 初始化");
-        Color = new SolidColorBrush(Colors.LightBlue);
+        Color = new Color { A = 0xFF, R = 0xAD, G = 0xD8, B = 0xE6 }; // LightBlue
+    }
+}
+
+public struct Color
+{
+    public byte A { get; set; }
+    public byte R { get; set; }
+    public byte G { get; set; }
+    public byte B { get; set; }
+
+    public Avalonia.Media.Color ToAvaloniaColor()
+    {
+        return Avalonia.Media.Color.FromArgb(A, R, G, B);
+    }
+
+    public SolidColorBrush ToSolidColorBrush()
+    {
+        return new SolidColorBrush(ToAvaloniaColor());
+    }
+
+    public static Color FromAvaloniaColor(Avalonia.Media.Color color)
+    {
+        return new Color { A = color.A, R = color.R, G = color.G, B = color.B };
+    }
+
+    public static implicit operator Avalonia.Media.Color(Color color)
+    {
+        return color.ToAvaloniaColor();
+    }
+
+    public static implicit operator Color(Avalonia.Media.Color color)
+    {
+        return FromAvaloniaColor(color);
     }
 }

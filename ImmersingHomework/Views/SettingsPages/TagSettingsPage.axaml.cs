@@ -15,16 +15,16 @@ namespace ImmersingHomework.Views.SettingsPages;
 public partial class TagSettingsPage : UserControl
 {
     private readonly ILogger _logger = Log.ForContext<TagSettingsPage>();
-    private static readonly List<Color> PredefinedColors = new List<Color>
+    private static readonly List<Avalonia.Media.Color> PredefinedColors = new List<Avalonia.Media.Color>
     {
-        Color.FromRgb(220, 240, 255), // 浅蓝
-        Color.FromRgb(255, 240, 220), // 浅橙
-        Color.FromRgb(220, 255, 220), // 浅绿
-        Color.FromRgb(255, 220, 240), // 浅粉
-        Color.FromRgb(240, 240, 220), // 浅黄
-        Color.FromRgb(240, 220, 255), // 浅紫
-        Color.FromRgb(255, 220, 220), // 浅红
-        Color.FromRgb(220, 255, 240)  // 浅青
+        Avalonia.Media.Color.FromRgb(220, 240, 255), // 浅蓝
+        Avalonia.Media.Color.FromRgb(255, 240, 220), // 浅橙
+        Avalonia.Media.Color.FromRgb(220, 255, 220), // 浅绿
+        Avalonia.Media.Color.FromRgb(255, 220, 240), // 浅粉
+        Avalonia.Media.Color.FromRgb(240, 240, 220), // 浅黄
+        Avalonia.Media.Color.FromRgb(240, 220, 255), // 浅紫
+        Avalonia.Media.Color.FromRgb(255, 220, 220), // 浅红
+        Avalonia.Media.Color.FromRgb(220, 255, 240)  // 浅青
     };
 
     public TagSettingsPage()
@@ -44,7 +44,7 @@ public partial class TagSettingsPage : UserControl
         TagPanel.Children.Clear();
         foreach (var tag in AppSettings.Instance.Tags)
         {
-            var tagControl = new Tag { TagName = tag.Name, TagColor = tag.Color };
+            var tagControl = new Tag { TagName = tag.Name, TagColor = tag.Color.ToSolidColorBrush() };
             var button = new Button
             {
                 Content = tagControl,
@@ -67,7 +67,7 @@ public partial class TagSettingsPage : UserControl
         var newTag = new TagModel
         {
             Name = "",
-            Color = new SolidColorBrush(PredefinedColors[0])
+            Color = Models.Color.FromAvaloniaColor(PredefinedColors[0])
         };
 
         var (result, deleted) = await ShowTagEditDialog(window, newTag, true);
@@ -103,7 +103,7 @@ public partial class TagSettingsPage : UserControl
         var editTag = new TagModel
         {
             Name = tag.Name,
-            Color = new SolidColorBrush(tag.Color.Color)
+            Color = tag.Color
         };
 
         var (result, deleted) = await ShowTagEditDialog(window, editTag, false);
@@ -189,7 +189,7 @@ public partial class TagSettingsPage : UserControl
                 Tag = color
             };
             colorComboBox.Items.Add(colorItem);
-            if (tag.Color.Color == color)
+            if (tag.Color.ToAvaloniaColor() == color)
             {
                 colorComboBox.SelectedItem = colorItem;
             }
@@ -232,9 +232,9 @@ public partial class TagSettingsPage : UserControl
         else if (result == FAContentDialogResult.Primary)
         {
             tag.Name = nameTextBox.Text?.Trim() ?? "";
-            if (colorComboBox.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is Color selectedColor)
+            if (colorComboBox.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is Avalonia.Media.Color selectedColor)
             {
-                tag.Color = new SolidColorBrush(selectedColor);
+                tag.Color = Models.Color.FromAvaloniaColor(selectedColor);
             }
         }
 
@@ -251,16 +251,16 @@ public partial class TagSettingsPage : UserControl
         return false;
     }
 
-    private string GetColorName(Color color)
+    private string GetColorName(Avalonia.Media.Color color)
     {
-        if (color == Color.FromRgb(220, 240, 255)) return "蓝色";
-        if (color == Color.FromRgb(255, 240, 220)) return "橙色";
-        if (color == Color.FromRgb(220, 255, 220)) return "绿色";
-        if (color == Color.FromRgb(255, 220, 240)) return "粉色";
-        if (color == Color.FromRgb(240, 240, 220)) return "黄色";
-        if (color == Color.FromRgb(240, 220, 255)) return "紫色";
-        if (color == Color.FromRgb(255, 220, 220)) return "红色";
-        if (color == Color.FromRgb(220, 255, 240)) return "青色";
+        if (color == Avalonia.Media.Color.FromRgb(220, 240, 255)) return "蓝色";
+        if (color == Avalonia.Media.Color.FromRgb(255, 240, 220)) return "橙色";
+        if (color == Avalonia.Media.Color.FromRgb(220, 255, 220)) return "绿色";
+        if (color == Avalonia.Media.Color.FromRgb(255, 220, 240)) return "粉色";
+        if (color == Avalonia.Media.Color.FromRgb(240, 240, 220)) return "黄色";
+        if (color == Avalonia.Media.Color.FromRgb(240, 220, 255)) return "紫色";
+        if (color == Avalonia.Media.Color.FromRgb(255, 220, 220)) return "红色";
+        if (color == Avalonia.Media.Color.FromRgb(220, 255, 240)) return "青色";
         return "自定义";
     }
 }

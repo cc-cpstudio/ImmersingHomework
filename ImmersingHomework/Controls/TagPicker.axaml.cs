@@ -38,7 +38,7 @@ public partial class TagPicker : UserControl
             var pickableTag = new PickableTag
             {
                 TagName = tagModel.Name,
-                TagColor = tagModel.Color
+                TagColor = tagModel.Color.ToSolidColorBrush()
             };
             PickableTagPanel.Children.Add(pickableTag);
             _pickableTags.Add(pickableTag);

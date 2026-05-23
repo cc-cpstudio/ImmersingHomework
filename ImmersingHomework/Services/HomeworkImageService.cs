@@ -202,13 +202,13 @@ public class HomeworkImageService
                     foreach (var tagName in item.Tags)
                     {
                         var tagModel = AppSettings.Instance.Tags.FirstOrDefault(t => t.Name == tagName);
-                        if (tagModel != null && tagModel.Color != null)
+                        if (tagModel != null)
                         {
-                            var avaloniaColor = tagModel.Color.Color;
+                            var tagColor = tagModel.Color;
                             tagModels.Add(new TagElement
                             {
                                 Name = tagName,
-                                Color = Color.FromRgb(avaloniaColor.R, avaloniaColor.G, avaloniaColor.B)
+                                Color = Color.FromRgb(tagColor.R, tagColor.G, tagColor.B)
                             });
                         }
                         else
