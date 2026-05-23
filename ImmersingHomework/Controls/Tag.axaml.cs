@@ -38,6 +38,7 @@ public partial class Tag : UserControl
 
     public Tag()
     {
+        _logger.Debug("Tag 控件初始化");
         InitializeComponent();
     }
 }

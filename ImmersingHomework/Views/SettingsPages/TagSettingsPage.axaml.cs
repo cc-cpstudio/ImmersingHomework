@@ -29,12 +29,18 @@ public partial class TagSettingsPage : UserControl
 
     public TagSettingsPage()
     {
+        _logger.Debug("TagSettingsPage 初始化");
         InitializeComponent();
-        this.AttachedToVisualTree += (_, _) => Refresh();
+        this.AttachedToVisualTree += (_, _) => 
+        {
+            _logger.Debug("TagSettingsPage 附加到视觉树，刷新标签列表");
+            Refresh();
+        };
     }
 
     public void Refresh()
     {
+        _logger.Debug("刷新标签列表，共 {Count} 个标签", AppSettings.Instance.Tags.Count);
         TagPanel.Children.Clear();
         foreach (var tag in AppSettings.Instance.Tags)
         {
@@ -53,6 +59,7 @@ public partial class TagSettingsPage : UserControl
 
     private async void AddTagButton_OnClick(object? sender, RoutedEventArgs e)
     {
+        _logger.Information("用户点击添加标签按钮");
         var window = TopLevel.GetTopLevel(this) as Window;
         if (window == null)
             return;
@@ -69,6 +76,7 @@ public partial class TagSettingsPage : UserControl
         {
             if (IsTagNameExists(newTag.Name))
             {
+                _logger.Warning("标签名称已存在: {TagName}", newTag.Name);
                 var errorDialog = new FAContentDialog()
                 {
                     Title = "错误",
@@ -79,6 +87,7 @@ public partial class TagSettingsPage : UserControl
                 return;
             }
 
+            _logger.Information("添加新标签: {TagName}", newTag.Name);
             AppSettings.Instance.Tags.Add(newTag);
             Refresh();
         }
@@ -86,6 +95,7 @@ public partial class TagSettingsPage : UserControl
 
     private async System.Threading.Tasks.Task OnTagButtonClick(TagModel tag)
     {
+        _logger.Debug("用户点击标签: {TagName}", tag.Name);
         var window = TopLevel.GetTopLevel(this) as Window;
         if (window == null)
             return;
@@ -100,6 +110,7 @@ public partial class TagSettingsPage : UserControl
 
         if (deleted)
         {
+            _logger.Information("准备删除标签: {TagName}", tag.Name);
             var confirmDialog = new FAContentDialog()
             {
                 Title = "删除标签",
@@ -112,6 +123,7 @@ public partial class TagSettingsPage : UserControl
 
             if (confirmResult == FAContentDialogResult.Primary)
             {
+                _logger.Information("确认删除标签: {TagName}", tag.Name);
                 AppSettings.Instance.Tags.Remove(tag);
                 Refresh();
             }
@@ -120,6 +132,7 @@ public partial class TagSettingsPage : UserControl
         {
             if (!string.Equals(tag.Name, editTag.Name) && IsTagNameExists(editTag.Name))
             {
+                _logger.Warning("标签名称已存在: {TagName}", editTag.Name);
                 var errorDialog = new FAContentDialog()
                 {
                     Title = "错误",
@@ -130,6 +143,7 @@ public partial class TagSettingsPage : UserControl
                 return;
             }
 
+            _logger.Information("更新标签: {OldName} -> {NewName}", tag.Name, editTag.Name);
             tag.Name = editTag.Name;
             tag.Color = editTag.Color;
             Refresh();
@@ -138,6 +152,7 @@ public partial class TagSettingsPage : UserControl
 
     private async System.Threading.Tasks.Task<(FAContentDialogResult, bool)> ShowTagEditDialog(Window window, TagModel tag, bool isNew)
     {
+        _logger.Debug("显示标签编辑对话框，新建: {IsNew}", isNew);
         var nameTextBox = new TextBox
         {
             PlaceholderText = "请输入标签名称",

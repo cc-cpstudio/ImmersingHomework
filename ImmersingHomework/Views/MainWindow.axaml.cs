@@ -36,6 +36,7 @@ public partial class MainWindow : Window
 
     public MainWindow()
     {
+        _logger.Information("MainWindow 初始化开始");
         InitializeComponent();
         WindowState = WindowState.FullScreen;
         
@@ -46,10 +47,19 @@ public partial class MainWindow : Window
         
         CalendarPopup.PlacementTarget = DateButton;
         
-        this.Activated += (s, e) => WindowActivated?.Invoke(this, EventArgs.Empty);
-        this.Deactivated += (s, e) => WindowDeactivated?.Invoke(this, EventArgs.Empty);
+        this.Activated += (s, e) => 
+        {
+            _logger.Debug("窗口激活");
+            WindowActivated?.Invoke(this, EventArgs.Empty);
+        };
+        this.Deactivated += (s, e) => 
+        {
+            _logger.Debug("窗口失活");
+            WindowDeactivated?.Invoke(this, EventArgs.Empty);
+        };
         
         HomeworkPanel.Refresh();
+        _logger.Information("MainWindow 初始化完成");
     }
     
     public void UpdateDateText(DateOnly date)
@@ -71,6 +81,7 @@ public partial class MainWindow : Window
 
     private async void AddHomeworkButton_OnClick(object? sender, RoutedEventArgs e)
     {
+        _logger.Information("用户点击了添加作业按钮");
         var control = new AddHomeworkWindow();
         var dialog = new FAContentDialog()
         {
@@ -87,10 +98,12 @@ public partial class MainWindow : Window
         
         if (result == FAContentDialogResult.Primary && control.Result != null)
         {
+            _logger.Information("用户确认添加新作业");
             var currentHomework = _storageService.Load(Date) ?? new Homework(Date, []);
             currentHomework.AddHomeworkItem(control.Result);
             _storageService.Save(currentHomework);
             HomeworkPanel.Refresh();
+            _logger.Information("作业已保存");
         }
     }
 

@@ -34,41 +34,52 @@ public class HomeworkStorageService
 
     public void Save(Homework homework)
     {
+        _logger.Debug("正在保存作业，日期: {Date}", homework.Date);
         var dataDir = GetDataDir();
         if (!Directory.Exists(dataDir))
         {
+            _logger.Information("创建作业数据目录: {DataDir}", dataDir);
             Directory.CreateDirectory(dataDir);
         }
         string json = JsonSerializer.Serialize(homework, new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText(GetFilePath(homework.Date), json);
+        _logger.Debug("作业已保存，日期: {Date}", homework.Date);
     }
 
     public async Task SaveAsync(Homework homework)
     {
+        _logger.Debug("正在异步保存作业，日期: {Date}", homework.Date);
         var dataDir = GetDataDir();
         if (!Directory.Exists(dataDir))
         {
+            _logger.Information("创建作业数据目录: {DataDir}", dataDir);
             Directory.CreateDirectory(dataDir);
         }
         string json = JsonSerializer.Serialize(homework, new JsonSerializerOptions { WriteIndented = true });
         await File.WriteAllTextAsync(GetFilePath(homework.Date), json);
+        _logger.Debug("作业已异步保存，日期: {Date}", homework.Date);
     }
 
     public Homework? Load(DateOnly date)
     {
+        _logger.Debug("正在加载作业，日期: {Date}", date);
         try
         {
             var filePath = GetFilePath(date);
             if (!File.Exists(filePath))
             {
+                _logger.Information("作业文件不存在，返回空作业，日期: {Date}", date);
                 return new Homework(date, []);
             }
             string json = File.ReadAllText(filePath);
-            return JsonSerializer.Deserialize<Homework>(json,
+            var homework = JsonSerializer.Deserialize<Homework>(json,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            _logger.Debug("作业已加载，日期: {Date}", date);
+            return homework;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.Warning(ex, "加载作业时出错，返回空作业，日期: {Date}", date);
             return new Homework(date, []);
         }
     }

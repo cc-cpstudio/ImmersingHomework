@@ -41,11 +41,23 @@ public partial class PickableTag : UserControl
 
     public PickableTag()
     {
+        _logger.Debug("PickableTag 初始化");
         InitializeComponent();
 
-        IsCheckedProperty.Changed.AddClassHandler<PickableTag>((tag, e) => tag.UpdateVisual());
-        TagNameProperty.Changed.AddClassHandler<PickableTag>((tag, e) => tag.UpdateTagName());
-        TagColorProperty.Changed.AddClassHandler<PickableTag>((tag, e) => tag.UpdateVisual());
+        IsCheckedProperty.Changed.AddClassHandler<PickableTag>((tag, e) => 
+        {
+            _logger.Debug("选中状态变化: {IsChecked}", tag.IsChecked);
+            tag.UpdateVisual();
+        });
+        TagNameProperty.Changed.AddClassHandler<PickableTag>((tag, e) => 
+        {
+            _logger.Debug("标签名称变化: {TagName}", tag.TagName);
+            tag.UpdateTagName();
+        });
+        TagColorProperty.Changed.AddClassHandler<PickableTag>((tag, e) => 
+        {
+            tag.UpdateVisual();
+        });
 
         TagToggleButton.IsCheckedChanged += (sender, args) =>
         {
@@ -54,6 +66,7 @@ public partial class PickableTag : UserControl
 
         this.AttachedToVisualTree += (sender, args) =>
         {
+            _logger.Debug("PickableTag 已附加到视觉树，名称: {TagName}", TagName);
             UpdateTagName();
             UpdateVisual();
         };
@@ -69,6 +82,7 @@ public partial class PickableTag : UserControl
 
     private void UpdateVisual()
     {
+        _logger.Debug("更新视觉状态，选中: {IsChecked}", IsChecked);
         if (TagToggleButton == null || TagText == null) return;
 
         if (IsChecked)

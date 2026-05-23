@@ -36,7 +36,9 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        _logger.Information("应用框架初始化完成");
         AppSettings.Instance.Initialize();
+        _logger.Information("应用设置已初始化");
         
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {

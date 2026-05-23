@@ -13,6 +13,7 @@ public partial class SettingsWindow : FAAppWindow
     private readonly ILogger _logger = Log.ForContext<SettingsWindow>();
     public SettingsWindow()
     {
+        _logger.Debug("SettingsWindow 初始化");
         InitializeComponent();
         NavigationView.SelectedItem = NavigationView.MenuItems[0];
     }
@@ -21,6 +22,7 @@ public partial class SettingsWindow : FAAppWindow
     {
         if (NavigationView.SelectedItem is FANavigationViewItem item && item.Tag is string tag)
         {
+            _logger.Debug("导航到设置页面: {Page}", tag);
             switch (tag)
             {
                 case "Basic":

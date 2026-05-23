@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using System;
 using Serilog;
 
@@ -15,11 +15,11 @@ class Program
         Log.Logger = new LoggerConfiguration()
 #if DEBUG
             .MinimumLevel.Verbose()
-            .WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss}] [{Level:u3}] [{SourceContext}] {Message} {NewLine}{Exception}")
-#elif RELEASE
+#else
             .MinimumLevel.Information()
 #endif
             .Enrich.FromLogContext()
+            .WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss}] [{Level:u3}] [{SourceContext}] {Message} {NewLine}{Exception}")
             .WriteTo.File(
                 outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss}] [{Level:u3}] [{SourceContext}] {Message} {NewLine}{Exception}",
                 path: "Logs/app-.log",
@@ -29,9 +29,22 @@ class Program
                 retainedFileCountLimit: 45
             )
             .CreateLogger();
-        
-        BuildAvaloniaApp()
-            .StartWithClassicDesktopLifetime(args);
+
+        try
+        {
+            var logger = Log.ForContext<Program>();
+            logger.Information("应用程序启动中...");
+            BuildAvaloniaApp()
+                .StartWithClassicDesktopLifetime(args);
+        }
+        catch (Exception ex)
+        {
+            Log.ForContext<Program>().Fatal(ex, "应用程序启动时发生致命错误");
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+        }
     }
 
     // Avalonia configuration, don't remove; also used by visual designer.

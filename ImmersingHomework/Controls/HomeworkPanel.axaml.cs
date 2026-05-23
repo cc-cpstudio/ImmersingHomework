@@ -30,14 +30,17 @@ public partial class  HomeworkPanel : UserControl
 
     public HomeworkPanel()
     {
+        _logger.Information("HomeworkPanel 初始化开始");
         InitializeComponent();
         _storageService = new HomeworkStorageService();
         DateProperty.Changed.AddClassHandler<HomeworkPanel>((panel, e) =>
         {
+            _logger.Debug("日期改变: {Date}", panel.Date);
             panel.DateChanged?.Invoke(panel.Date);
             panel.Refresh();
         });
         Date = DateOnly.FromDateTime(DateTime.Now);
+        _logger.Information("HomeworkPanel 初始化完成");
     }
 
     public void Refresh()
@@ -47,6 +50,7 @@ public partial class  HomeworkPanel : UserControl
 
     public void Refresh(DateOnly date)
     {
+        _logger.Debug("刷新作业面板，日期: {Date}", date);
         SubjectHomeworkPanels.Children.Clear();
         var homework = _storageService.Load(date);
 
@@ -57,6 +61,7 @@ public partial class  HomeworkPanel : UserControl
             if ((homework.HomeworkItems == null || homework.HomeworkItems.Count == 0) 
                 && !_storageService.Exists(date))
             {
+                _logger.Debug("自动创建空作业文件，日期: {Date}", date);
                 // 自动保存这个空白作业，创建对应的日期文件（异步执行，不阻塞UI）
                 Task.Run(async () =>
                 {
@@ -64,9 +69,9 @@ public partial class  HomeworkPanel : UserControl
                     {
                         await _storageService.SaveAsync(homework);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // 忽略保存错误，不影响UI
+                        _logger.Warning(ex, "保存空作业时出错");
                     }
                 });
             }
@@ -76,6 +81,8 @@ public partial class  HomeworkPanel : UserControl
                     .Select(item => item.Subject)
                     .Distinct()
                     .ToList();
+
+                _logger.Debug("找到 {Count} 个科目，日期: {Date}", subjects.Count, date);
 
                 foreach (var subject in subjects)
                 {
@@ -102,6 +109,8 @@ public partial class  HomeworkPanel : UserControl
         {
             NoHomeworkText.IsVisible = !hasHomework;
         }
+        
+        _logger.Debug("作业面板刷新完成，有作业: {HasHomework}", hasHomework);
     }
 
     private async void OnEditRequested(HomeworkItem item)

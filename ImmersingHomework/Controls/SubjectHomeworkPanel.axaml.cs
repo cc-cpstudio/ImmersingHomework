@@ -35,13 +35,23 @@ public partial class SubjectHomeworkPanel : UserControl
 
     public SubjectHomeworkPanel()
     {
+        _logger.Debug("SubjectHomeworkPanel 初始化");
         InitializeComponent();
-        SubjectProperty.Changed.AddClassHandler<SubjectHomeworkPanel>((panel, e) => panel.Refresh());
-        HomeworkItemsProperty.Changed.AddClassHandler<SubjectHomeworkPanel>((panel, e) => panel.Refresh());
+        SubjectProperty.Changed.AddClassHandler<SubjectHomeworkPanel>((panel, e) => 
+        {
+            _logger.Debug("科目属性变化: {Subject}", panel.Subject);
+            panel.Refresh();
+        });
+        HomeworkItemsProperty.Changed.AddClassHandler<SubjectHomeworkPanel>((panel, e) => 
+        {
+            _logger.Debug("作业项列表变化");
+            panel.Refresh();
+        });
     }
 
     public void Refresh()
     {
+        _logger.Debug("刷新科目作业面板，科目: {Subject}", Subject);
         if (!string.IsNullOrEmpty(Subject))
         {
             SubjectText.Text = Subject;
@@ -49,6 +59,8 @@ public partial class SubjectHomeworkPanel : UserControl
         HomeworkItemPanels.Children.Clear();
 
         var items = HomeworkItems ?? Enumerable.Empty<HomeworkItem>();
+        _logger.Debug("科目 {Subject} 有 {Count} 个作业项", Subject, items.Count());
+        
         foreach (var item in items)
         {
             if (item != null)
@@ -61,5 +73,7 @@ public partial class SubjectHomeworkPanel : UserControl
                 HomeworkItemPanels.Children.Add(itemPanel);
             }
         }
+        
+        _logger.Debug("科目作业面板刷新完成");
     }
 }

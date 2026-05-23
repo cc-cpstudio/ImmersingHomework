@@ -27,18 +27,29 @@ public partial class HomeworkItemPanel : UserControl
 
     public HomeworkItemPanel()
     {
+        _logger.Debug("HomeworkItemPanel 初始化");
         InitializeComponent();
-        HomeworkItemProperty.Changed.AddClassHandler<HomeworkItemPanel>((panel, e) => panel.UpdatePanel());
+        HomeworkItemProperty.Changed.AddClassHandler<HomeworkItemPanel>((panel, e) => 
+        {
+            _logger.Debug("作业项属性变化");
+            panel.UpdatePanel();
+        });
     }
 
     private void MoreButton_OnClick(object? sender, RoutedEventArgs e)
     {
+        _logger.Debug("用户点击了更多按钮，请求编辑作业，ID: {Id}", HomeworkItem?.Id);
         EditRequested?.Invoke(HomeworkItem);
     }
 
     private void UpdatePanel()
     {
-        if (HomeworkItem == null) return;
+        _logger.Debug("更新作业项面板");
+        if (HomeworkItem == null) 
+        {
+            _logger.Debug("作业项为空，跳过更新");
+            return;
+        }
         
         if (!string.IsNullOrEmpty(HomeworkItem.Content))
         {
@@ -56,6 +67,8 @@ public partial class HomeworkItemPanel : UserControl
         };
 
         var tags = HomeworkItem.Tags ?? Enumerable.Empty<string>();
+        _logger.Debug("作业项有 {Count} 个标签", tags.Count());
+        
         for (int i = 0; i < tags.Count(); i++)
         {
             var tagName = tags.ElementAt(i);
@@ -78,5 +91,7 @@ public partial class HomeworkItemPanel : UserControl
                 TagPanel.Children.Add(tag);
             }
         }
+        
+        _logger.Debug("作业项面板更新完成");
     }
 }

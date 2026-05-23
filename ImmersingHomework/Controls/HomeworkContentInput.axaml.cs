@@ -10,6 +10,7 @@ public partial class HomeworkContentInput : UserControl
     private readonly ILogger _logger = Log.ForContext<HomeworkContentInput>();
     public HomeworkContentInput()
     {
+        _logger.Debug("HomeworkContentInput 初始化");
         InitializeComponent();
     }
 }

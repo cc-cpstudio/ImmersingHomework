@@ -18,5 +18,6 @@ public class HomeworkItem
         Subject = subject;
         Content = content;
         Tags = tags;
+        _logger.Debug("HomeworkItem 初始化，ID: {Id}", Id);
     }
 }

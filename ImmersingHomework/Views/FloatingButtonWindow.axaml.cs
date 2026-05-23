@@ -23,6 +23,7 @@ public partial class FloatingButtonWindow : Window
     
     public FloatingButtonWindow()
     {
+        _logger.Debug("FloatingButtonWindow 初始化");
         InitializeComponent();
         
         Position = new PixelPoint(100, 100);
@@ -32,21 +33,26 @@ public partial class FloatingButtonWindow : Window
         this.PointerPressed += OnPointerPressed;
         this.PointerMoved += OnPointerMoved;
         this.PointerReleased += OnPointerReleased;
+        
+        _logger.Debug("浮窗初始位置: {Position}", Position);
     }
 
     public void ShowWithAnimation()
     {
+        _logger.Information("显示浮窗");
         Show();
         AnimateOpacity(1, TimeSpan.FromMilliseconds(200));
     }
 
     public void HideWithAnimation()
     {
+        _logger.Information("隐藏浮窗");
         AnimateOpacity(0, TimeSpan.FromMilliseconds(200), () => Hide());
     }
 
     private void AnimateOpacity(double targetOpacity, TimeSpan duration, Action? onComplete = null)
     {
+        _logger.Debug("执行透明度动画，目标: {TargetOpacity}", targetOpacity);
         var startOpacity = Opacity;
         var startTime = DateTime.Now;
         
@@ -59,6 +65,7 @@ public partial class FloatingButtonWindow : Window
                 await Task.Delay(16);
             }
             Opacity = targetOpacity;
+            _logger.Debug("透明度动画完成");
             onComplete?.Invoke();
         });
     }
@@ -67,6 +74,7 @@ public partial class FloatingButtonWindow : Window
     {
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
+            _logger.Debug("浮窗被按下");
             _isDragging = true;
             _hasMoved = false;
             _dragStartPoint = e.GetPosition(this);
@@ -128,7 +136,12 @@ public partial class FloatingButtonWindow : Window
             // 如果没有移动，则触发点击事件
             if (!_hasMoved)
             {
+                _logger.Debug("浮窗被点击");
                 FloatingButtonClicked?.Invoke(this, EventArgs.Empty);
+            }
+            else
+            {
+                _logger.Debug("浮窗拖拽结束，新位置: {Position}", Position);
             }
         }
     }

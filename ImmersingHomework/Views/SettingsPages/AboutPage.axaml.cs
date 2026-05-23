@@ -10,6 +10,7 @@ public partial class AboutPage : UserControl
     private readonly ILogger _logger = Log.ForContext<AboutPage>();
     public AboutPage()
     {
+        _logger.Debug("AboutPage 初始化");
         InitializeComponent();
     }
 }

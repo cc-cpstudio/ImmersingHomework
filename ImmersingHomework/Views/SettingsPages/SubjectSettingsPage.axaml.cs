@@ -13,12 +13,18 @@ public partial class SubjectSettingsPage : UserControl
     private readonly ILogger _logger = Log.ForContext<SubjectSettingsPage>();
     public SubjectSettingsPage()
     {
+        _logger.Debug("SubjectSettingsPage 初始化");
         InitializeComponent();
-        this.AttachedToVisualTree += (_, _) => Refresh();
+        this.AttachedToVisualTree += (_, _) => 
+        {
+            _logger.Debug("SubjectSettingsPage 附加到视觉树，刷新科目列表");
+            Refresh();
+        };
     }
 
     public void Refresh()
     {
+        _logger.Debug("刷新科目列表，共 {Count} 个科目", AppSettings.Instance.Subjects.Count);
         SubjectPanel.Children.Clear();
         foreach (var subject in AppSettings.Instance.Subjects)
         {
@@ -30,6 +36,7 @@ public partial class SubjectSettingsPage : UserControl
 
     private async System.Threading.Tasks.Task OnSubjectButtonClick(string subjectName)
     {
+        _logger.Information("准备删除科目: {Subject}", subjectName);
         var window = TopLevel.GetTopLevel(this) as Window;
         if (window == null)
             return;
@@ -46,30 +53,36 @@ public partial class SubjectSettingsPage : UserControl
 
         if (result == FAContentDialogResult.Primary)
         {
+            _logger.Information("用户确认删除科目: {Subject}", subjectName);
             AppSettings.Instance.Subjects.Remove(subjectName);
             Refresh();
+        }
+        else
+        {
+            _logger.Debug("用户取消删除科目: {Subject}", subjectName);
         }
     }
 
     private async void AddSubjectButton_OnClick(object? sender, RoutedEventArgs e)
     {
+        _logger.Information("用户点击添加科目按钮");
         var window = TopLevel.GetTopLevel(this) as Window;
         if (window == null)
             return;
 
         var textBox = new TextBox
-        {
-            PlaceholderText = "请输入科目名称",
-            Width = 300
-        };
+            {
+                PlaceholderText = "请输入科目名称",
+                Width = 300
+            };
 
         var dialog = new FAContentDialog()
-        {
-            Title = "添加科目",
-            Content = textBox,
-            PrimaryButtonText = "添加",
-            CloseButtonText = "取消"
-        };
+            {
+                Title = "添加科目",
+                Content = textBox,
+                PrimaryButtonText = "添加",
+                CloseButtonText = "取消"
+            };
 
         var result = await dialog.ShowAsync(window);
 
@@ -78,11 +91,13 @@ public partial class SubjectSettingsPage : UserControl
             var subjectName = textBox.Text?.Trim();
             if (string.IsNullOrEmpty(subjectName))
             {
+                _logger.Debug("科目名称为空，取消添加");
                 return;
             }
 
             if (AppSettings.Instance.Subjects.Contains(subjectName))
             {
+                _logger.Warning("科目已存在: {Subject}", subjectName);
                 var errorDialog = new FAContentDialog()
                 {
                     Title = "错误",
@@ -93,6 +108,7 @@ public partial class SubjectSettingsPage : UserControl
                 return;
             }
 
+            _logger.Information("添加新科目: {Subject}", subjectName);
             AppSettings.Instance.Subjects.Add(subjectName);
             Refresh();
         }

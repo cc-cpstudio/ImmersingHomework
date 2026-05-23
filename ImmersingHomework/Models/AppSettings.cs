@@ -30,6 +30,7 @@ public class AppSettings
 
     public void Initialize()
     {
+        _logger.Information("开始加载应用设置");
         var loaded = _storageService.Load();
         Subjects = new ObservableCollection<string>(loaded.Subjects);
         Tags = new ObservableCollection<TagModel>(loaded.Tags);
@@ -38,6 +39,7 @@ public class AppSettings
         EnableClassIslandIPCService = new ObservableProperty<bool>(loaded.EnableClassIslandIPCService.Value);
         
         SubscribeToChanges();
+        _logger.Information("应用设置加载完成");
     }
 
     private void SubscribeToChanges()
