@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input.Platform;
@@ -133,16 +134,55 @@ public partial class MainWindow : Window
             };
             dialog.PrimaryButtonClick += (s, e) =>
             {
-                Process.Start(Path.GetFullPath(outputPath));
+                var fullPath = Path.GetFullPath(outputPath);
+                try
+                {
+                    if (OperatingSystem.IsLinux())
+                    {
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = "xdg-open",
+                            Arguments = fullPath,
+                            UseShellExecute = false
+                        });
+                    }
+                    else if (OperatingSystem.IsMacOS())
+                    {
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = "open",
+                            Arguments = fullPath,
+                            UseShellExecute = false
+                        });
+                    }
+                    else
+                    {
+                        // Windows
+                        Process.Start(new ProcessStartInfo(fullPath) { UseShellExecute = true });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, "打开文件失败: {Path}", fullPath);
+                }
                 dialog.Hide();
             };
             dialog.SecondaryButtonClick += async (s, e) =>
             {
                 var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
                 if (clipboard is null) return;
-                using var bitmap = new Bitmap(outputPath);
-                await clipboard.SetBitmapAsync(bitmap);
-                await clipboard.FlushAsync();
+                var bitmap = new Bitmap(outputPath); // 不使用 using，让剪贴板自己管理
+                try
+                {
+                    await clipboard.SetBitmapAsync(bitmap);
+                    await clipboard.FlushAsync();
+                    // 延迟一小段时间，确保剪贴板完成操作后再释放
+                    await Task.Delay(100);
+                }
+                finally
+                {
+                    bitmap.Dispose();
+                }
                 dialog.Hide();
             };
             dialog.CloseButtonClick += (s, e) =>
