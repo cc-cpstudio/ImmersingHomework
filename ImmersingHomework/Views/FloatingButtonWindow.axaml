@@ -15,9 +15,8 @@
         Focusable="False"
         ShowActivated="False"
         ShowInTaskbar="False">
-    <Border Background="#FF2196F3"
-            CornerRadius="8"
+    <Border CornerRadius="16"
             BoxShadow="0 4 20 0 rgba(0,0,0,0.2)">
-        <fa:FASymbolIcon Symbol="Home" FontSize="36" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <fa:FAImageIcon Source="avares://ImmersingHomework/Assets/icon.png" HorizontalAlignment="Center" VerticalAlignment="Center"/>
     </Border>
 </Window>
