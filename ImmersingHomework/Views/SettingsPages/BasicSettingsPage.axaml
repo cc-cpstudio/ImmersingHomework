@@ -14,7 +14,7 @@
                     <fa:FASymbolIconSource Symbol="Star"/>
                 </fa:FASettingsExpander.IconSource>
                 <fa:FASettingsExpander.Footer>
-                    <ToggleSwitch OnContent="" OffContent=""/>
+                    <ToggleSwitch x:Name="LaunchAtStartupSwitch" OnContent="" OffContent="" IsCheckedChanged="LaunchAtStartupSwitch_OnIsCheckedChanged"/>
                 </fa:FASettingsExpander.Footer>
             </fa:FASettingsExpander>
         </StackPanel>

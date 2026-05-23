@@ -12,11 +12,7 @@ public class AppSettingsStorageService
     private readonly ILogger _logger = Log.ForContext<AppSettingsStorageService>();
     private string GetFilePath()
     {
-        return Path.Combine(
-            Directory.GetCurrentDirectory(), 
-            "Data", 
-            "Settings.json"
-        );
+        return Path.Combine(Directory.GetCurrentDirectory(), "Data", "Settings.json");
     }
 
     private string GetDataDir()

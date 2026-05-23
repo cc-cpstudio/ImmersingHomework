@@ -14,7 +14,7 @@
                     <fa:FAImageIconSource Source="avares://ImmersingHomework/Assets/ClassIsland.png"/>
                 </fa:FASettingsExpander.IconSource>
                 <fa:FASettingsExpander.Footer>
-                    <ToggleSwitch OnContent="" OffContent=""/>
+                    <ToggleSwitch x:Name="ClassIslandSwitch" OnContent="" OffContent="" IsCheckedChanged="ClassIslandSwitch_OnIsCheckedChanged"/>
                 </fa:FASettingsExpander.Footer>
             </fa:FASettingsExpander>
         </StackPanel>

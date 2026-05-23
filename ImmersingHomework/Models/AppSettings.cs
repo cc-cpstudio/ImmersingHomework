@@ -32,11 +32,19 @@ public class AppSettings
     {
         _logger.Information("开始加载应用设置");
         var loaded = _storageService.Load();
-        Subjects = new ObservableCollection<string>(loaded.Subjects);
-        Tags = new ObservableCollection<TagModel>(loaded.Tags);
+        Subjects.Clear();
+        foreach (var subject in loaded.Subjects)
+        {
+            Subjects.Add(subject);
+        }
+        Tags.Clear();
+        foreach (var tag in loaded.Tags)
+        {
+            Tags.Add(tag);
+        }
         FirstLaunch = loaded.FirstLaunch;
-        LaunchAtStartup = new ObservableProperty<bool>(loaded.LaunchAtStartup.Value);
-        EnableClassIslandIPCService = new ObservableProperty<bool>(loaded.EnableClassIslandIPCService.Value);
+        LaunchAtStartup.Value = loaded.LaunchAtStartup.Value;
+        EnableClassIslandIPCService.Value = loaded.EnableClassIslandIPCService.Value;
         
         SubscribeToChanges();
         _logger.Information("应用设置加载完成");
