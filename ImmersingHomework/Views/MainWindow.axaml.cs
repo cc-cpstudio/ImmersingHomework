@@ -1,8 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
+using Avalonia.Media.Imaging;
 using FluentAvalonia.UI.Controls;
 using ImmersingHomework.Controls;
 using ImmersingHomework.Models;
@@ -110,5 +114,42 @@ public partial class MainWindow : Window
     private void MinimizeButton_OnClick(object? sender, RoutedEventArgs e)
     {
         WindowMinimized?.Invoke(this, EventArgs.Empty);
+    }
+
+    private async void ShareButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        var homework = _storageService.Load(Date);
+        var outputPath = $"Outputs/{Date}.png";
+        if (homework is not null)
+        {
+            HomeworkImageService.HomeworkToImage(homework, outputPath);
+            var dialog = new FAContentDialog()
+            {
+                Title = "作业分享",
+                Content = $"今日作业已保存到 {Path.GetFullPath(outputPath)}，请自行查看或点击复制图片。",
+                PrimaryButtonText = "打开",
+                SecondaryButtonText = "复制",
+                CloseButtonText = "关闭"
+            };
+            dialog.PrimaryButtonClick += (s, e) =>
+            {
+                Process.Start(Path.GetFullPath(outputPath));
+                dialog.Hide();
+            };
+            dialog.SecondaryButtonClick += async (s, e) =>
+            {
+                var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+                if (clipboard is null) return;
+                using var bitmap = new Bitmap(outputPath);
+                await clipboard.SetBitmapAsync(bitmap);
+                await clipboard.FlushAsync();
+                dialog.Hide();
+            };
+            dialog.CloseButtonClick += (s, e) =>
+            {
+                dialog.Hide();
+            };
+            await dialog.ShowAsync(this);
+        }
     }
 }
