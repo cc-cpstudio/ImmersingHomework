@@ -62,7 +62,7 @@ public partial class App : Application
                     _platformService.HideFromAltTab(_floatingButtonWindow);
                 }
                 
-                desktop.MainWindow = _mainWindow;
+                desktop.MainWindow = _floatingButtonWindow;
             
                 _mainWindow.WindowMinimized += MainWindow_WindowMinimized;
                 _mainWindow.WindowActivated += MainWindow_WindowActivated;
@@ -70,9 +70,9 @@ public partial class App : Application
                 _mainWindow.Closing += MainWindow_Closing;
             
                 _floatingButtonWindow.FloatingButtonClicked += FloatingButtonWindow_FloatingButtonClicked;
+                _floatingButtonWindow.Closing += FloatingButtonWindow_Closing;
             
-                _mainWindow.Show();
-                _floatingButtonWindow.Show();
+                _floatingButtonWindow.ShowWithAnimation();
 
                 SetupTrayIcon();
             }
@@ -235,7 +235,11 @@ public partial class App : Application
 
     private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
-        _floatingButtonWindow?.Close();
+    }
+
+    private void FloatingButtonWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        _mainWindow?.Close();
     }
 
     private void FloatingButtonWindow_FloatingButtonClicked(object? sender, EventArgs e)

@@ -7,6 +7,7 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ImmersingHomework.Views.MainWindow"
         Title="ImmersingHomework" Background="#ECECEC"
+        Icon="avares://ImmersingHomework/Assets/icon.png"
         RequestedThemeVariant="Light">
         <Grid RowDefinitions="Auto,*,Auto" Margin="16">
                 <TextBlock x:Name="Hitokoto" Grid.Row="0" FontSize="24" Foreground="#AEAEAE" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 0 0 8"/>
