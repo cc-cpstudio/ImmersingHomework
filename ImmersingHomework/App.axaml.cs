@@ -18,6 +18,7 @@ namespace ImmersingHomework;
 public partial class App : Application
 {
     private readonly ILogger _logger = Log.ForContext<App>();
+    private WelcomeWindow? _welcomeWindow;
     private MainWindow? _mainWindow;
     private FloatingButtonWindow? _floatingButtonWindow;
     private SettingsWindow? _settingsWindow;
@@ -47,31 +48,40 @@ public partial class App : Application
         {
             _desktopLifetime = desktop;
             _platformService = CreatePlatformService();
-            
-            _mainWindow = new MainWindow();
-            _floatingButtonWindow = new FloatingButtonWindow();
-            
-            if (_platformService != null)
+
+            if (!AppSettings.Instance.FirstLaunch)
             {
-                _platformService.SetTopmost(_floatingButtonWindow);
-                _platformService.DisableFocus(_floatingButtonWindow);
-                _platformService.HideFromTaskbar(_floatingButtonWindow);
-                _platformService.HideFromAltTab(_floatingButtonWindow);
+                _mainWindow = new MainWindow();
+                _floatingButtonWindow = new FloatingButtonWindow();
+
+                if (_platformService != null)
+                {
+                    _platformService.SetTopmost(_floatingButtonWindow);
+                    _platformService.DisableFocus(_floatingButtonWindow);
+                    _platformService.HideFromTaskbar(_floatingButtonWindow);
+                    _platformService.HideFromAltTab(_floatingButtonWindow);
+                }
+                
+                desktop.MainWindow = _mainWindow;
+            
+                _mainWindow.WindowMinimized += MainWindow_WindowMinimized;
+                _mainWindow.WindowActivated += MainWindow_WindowActivated;
+                _mainWindow.WindowDeactivated += MainWindow_WindowDeactivated;
+                _mainWindow.Closing += MainWindow_Closing;
+            
+                _floatingButtonWindow.FloatingButtonClicked += FloatingButtonWindow_FloatingButtonClicked;
+            
+                _mainWindow.Show();
+                _floatingButtonWindow.Show();
+
+                SetupTrayIcon();
             }
-            
-            desktop.MainWindow = _mainWindow;
-            
-            _mainWindow.WindowMinimized += MainWindow_WindowMinimized;
-            _mainWindow.WindowActivated += MainWindow_WindowActivated;
-            _mainWindow.WindowDeactivated += MainWindow_WindowDeactivated;
-            _mainWindow.Closing += MainWindow_Closing;
-            
-            _floatingButtonWindow.FloatingButtonClicked += FloatingButtonWindow_FloatingButtonClicked;
-            
-            _mainWindow.Show();
-            _floatingButtonWindow.Show();
-            
-            SetupTrayIcon();
+            else
+            {
+                _welcomeWindow = new WelcomeWindow();
+                desktop.MainWindow = _welcomeWindow;
+                _welcomeWindow.Show();
+            }
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -153,7 +163,7 @@ public partial class App : Application
         }
     }
 
-    private void RestartApplication()
+    public void RestartApplication()
     {
         if (_desktopLifetime != null)
         {
@@ -167,7 +177,7 @@ public partial class App : Application
         }
     }
 
-    private void ExitApplication()
+    public void ExitApplication()
     {
         _desktopLifetime?.Shutdown();
     }

@@ -24,6 +24,11 @@
         <entry key="ImmersingHomework/Views/SettingsPages/SubjectSettingsPage.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
         <entry key="ImmersingHomework/Views/SettingsPages/TagSettingsPage.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
         <entry key="ImmersingHomework/Views/SettingsWindow.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
+        <entry key="ImmersingHomework/Views/WelcomePages/BasicSettingsPage.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
+        <entry key="ImmersingHomework/Views/WelcomePages/CompletionPage.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
+        <entry key="ImmersingHomework/Views/WelcomePages/LicensePage.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
+        <entry key="ImmersingHomework/Views/WelcomePages/WelcomePage.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
+        <entry key="ImmersingHomework/Views/WelcomeWindow.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
       </map>
     </option>
   </component>
