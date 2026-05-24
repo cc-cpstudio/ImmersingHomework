@@ -31,7 +31,7 @@ public static class HitokotoService
             var hitokoto = new Hitokoto()
             {
                 Sentence = Convert.ToString(json["hitokoto"]) ?? throw new InvalidOperationException(),
-                Author = Convert.ToString(json["from"]) ?? throw new InvalidOperationException()
+                Author = Convert.ToString(json["from_who"]) ?? throw new InvalidOperationException()
             };
             
             _logger.Debug("成功获取 Hitokoto: {Sentence} —— {Author}", hitokoto.Sentence, hitokoto.Author);

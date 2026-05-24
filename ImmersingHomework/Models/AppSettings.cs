@@ -7,6 +7,16 @@ using Serilog;
 
 namespace ImmersingHomework.Models;
 
+public enum HitokotoDisplayMode
+{
+    Hide, Content, ContentAndAuthor
+}
+
+public enum HitokotoSource
+{
+    HitokotoCn
+}
+
 public class AppSettings
 {
     public static AppSettings Instance { get; } = new AppSettings();
@@ -21,6 +31,13 @@ public class AppSettings
     public bool FirstLaunch { get; set; } = true;
     
     public ObservableProperty<bool> LaunchAtStartup { get; set; } = new(false);
+
+    public ObservableProperty<HitokotoDisplayMode> HitokotoDisplayMode { get; set; } =
+        new(Models.HitokotoDisplayMode.Content);
+
+    public ObservableProperty<HitokotoSource> HitokotoSource { get; set; } = new(Models.HitokotoSource.HitokotoCn);
+    
+    public ObservableProperty<int> HitokotoRefreshTimeSpan { get; set; } = new(120);
     
     public ObservableProperty<bool> EnableClassIslandIPCService { get; set; } = new(false);
 
@@ -45,6 +62,9 @@ public class AppSettings
         FirstLaunch = loaded.FirstLaunch;
         LaunchAtStartup.Value = loaded.LaunchAtStartup.Value;
         EnableClassIslandIPCService.Value = loaded.EnableClassIslandIPCService.Value;
+        HitokotoDisplayMode.Value = loaded.HitokotoDisplayMode.Value;
+        HitokotoSource.Value = loaded.HitokotoSource.Value;
+        HitokotoRefreshTimeSpan.Value = loaded.HitokotoRefreshTimeSpan.Value;
         
         SubscribeToChanges();
         _logger.Information("应用设置加载完成");
@@ -57,6 +77,9 @@ public class AppSettings
         
         LaunchAtStartup.ValueChanged += _ => MarkDirty();
         EnableClassIslandIPCService.ValueChanged += _ => MarkDirty();
+        HitokotoDisplayMode.ValueChanged += _ => MarkDirty();
+        HitokotoSource.ValueChanged += _ => MarkDirty();
+        HitokotoRefreshTimeSpan.ValueChanged += _ => MarkDirty();
     }
 
     private void MarkDirty()

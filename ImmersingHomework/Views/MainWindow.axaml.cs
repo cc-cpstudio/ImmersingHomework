@@ -21,7 +21,6 @@ namespace ImmersingHomework.Views;
 public partial class MainWindow : Window
 {
     private readonly ILogger _logger = Log.ForContext<MainWindow>();
-    private DateOnly _date;
     private Timer _hitokotoTimer;
     
     private event Action<DateOnly> DateChanged;
@@ -29,17 +28,17 @@ public partial class MainWindow : Window
     public event EventHandler? WindowMinimized;
     public event EventHandler? WindowActivated;
     public event EventHandler? WindowDeactivated;
-    
+
     public DateOnly Date
     {
-        get => _date;
+        get;
         set
         {
-            _date = value;
-            DateChanged?.Invoke(_date);
+            field = value;
+            DateChanged?.Invoke(field);
         }
     }
-    
+
     private readonly HomeworkStorageService _storageService;
 
     public MainWindow()
@@ -66,8 +65,18 @@ public partial class MainWindow : Window
             WindowDeactivated?.Invoke(this, EventArgs.Empty);
         };
 
-        _logger.Debug("初始化 Hitokoto 定时器，间隔 5 秒");
-        _hitokotoTimer = new Timer(5000);
+        if (AppSettings.Instance.HitokotoDisplayMode.Value is not HitokotoDisplayMode.Hide)
+            SetupHitokotoTimer();
+
+        HomeworkPanel.Refresh();
+        _logger.Information("MainWindow 初始化完成");
+    }
+
+    protected void SetupHitokotoTimer()
+    {
+        _logger.Debug("初始化 Hitokoto 定时器，间隔 {Span} 秒", AppSettings.Instance.HitokotoRefreshTimeSpan);
+        _hitokotoTimer = new Timer(AppSettings.Instance.HitokotoRefreshTimeSpan.Value * 1000);
+        AppSettings.Instance.HitokotoRefreshTimeSpan.ValueChanged += UpdateHitokotoTimerInterval;
         _hitokotoTimer.Elapsed += async (s, e) =>
         {
             _logger.Debug("Hitokoto 定时器触发，开始获取新的 Hitokoto");
@@ -77,12 +86,22 @@ public partial class MainWindow : Window
                 if (hitokoto is null)
                 {
                     _logger.Debug("获取到的 Hitokoto 为空，使用默认文本");
-                    Hitokoto.Text = "咕咕嘎嘎！ —— programmer_cc";
+                    Hitokoto.Text = AppSettings.Instance.HitokotoDisplayMode.Value switch
+                    {
+                        HitokotoDisplayMode.Hide => "",
+                        HitokotoDisplayMode.Content => "咕咕嘎嘎！",
+                        HitokotoDisplayMode.ContentAndAuthor => "咕咕嘎嘎！ —— programmer_cc"
+                    };
                 }
                 else
                 {
                     _logger.Debug("更新 Hitokoto 显示: {Sentence} —— {Author}", hitokoto.Value.Sentence, hitokoto.Value.Author);
-                    Hitokoto.Text = $"{hitokoto.Value.Sentence} —— {hitokoto.Value.Author}";
+                    Hitokoto.Text = AppSettings.Instance.HitokotoDisplayMode.Value switch
+                    {
+                        HitokotoDisplayMode.Hide => "",
+                        HitokotoDisplayMode.Content => hitokoto.Value.Sentence,
+                        HitokotoDisplayMode.ContentAndAuthor => $"{hitokoto.Value.Sentence} —— {hitokoto.Value.Author}"
+                    };
                 }
             });
         };
@@ -95,9 +114,11 @@ public partial class MainWindow : Window
         };
         _hitokotoTimer.Start();
         _logger.Debug("Hitokoto 定时器已启动");
-        
-        HomeworkPanel.Refresh();
-        _logger.Information("MainWindow 初始化完成");
+    }
+
+    private void UpdateHitokotoTimerInterval(int span)
+    {
+        _hitokotoTimer.Interval = span * 1000;
     }
     
     public void UpdateDateText(DateOnly date)

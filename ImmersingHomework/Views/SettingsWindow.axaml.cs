@@ -40,6 +40,9 @@ public partial class SettingsWindow : FAAppWindow
                 case "Linkage":
                     ContentFrame.Navigate(typeof(LinkageSettingsPage));
                     break;
+                case "Hitokoto":
+                    ContentFrame.Navigate(typeof(HitokotoSettingsPage));
+                    break;
             }
         }
     }
