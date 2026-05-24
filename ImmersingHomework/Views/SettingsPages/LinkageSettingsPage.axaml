@@ -14,7 +14,8 @@
                     <fa:FAImageIconSource Source="avares://ImmersingHomework/Assets/ClassIsland.png"/>
                 </fa:FASettingsExpander.IconSource>
                 <fa:FASettingsExpander.Footer>
-                    <ToggleSwitch x:Name="ClassIslandSwitch" OnContent="" OffContent="" IsCheckedChanged="ClassIslandSwitch_OnIsCheckedChanged"/>
+                    <!-- <ToggleSwitch x:Name="ClassIslandSwitch" OnContent="" OffContent="" IsCheckedChanged="ClassIslandSwitch_OnIsCheckedChanged"/> -->
+                    <TextBlock Text="骗你的，下个版本再做"/>
                 </fa:FASettingsExpander.Footer>
             </fa:FASettingsExpander>
         </StackPanel>
