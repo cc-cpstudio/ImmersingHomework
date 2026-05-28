@@ -10,4 +10,6 @@ public abstract class PlatformServiceBase
     public abstract void DisableFocus(Window window);
     public abstract void HideFromTaskbar(Window window);
     public abstract void HideFromAltTab(Window window);
+
+    public abstract void SetLaunchAtStartup(bool enabled);
 }

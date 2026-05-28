@@ -48,6 +48,11 @@ public partial class App : Application
         {
             _desktopLifetime = desktop;
             _platformService = CreatePlatformService();
+            
+            // 应用当前的开机自启动设置
+            ApplyLaunchAtStartupSetting();
+            // 订阅设置变更事件
+            SubscribeToLaunchAtStartupChanges();
 
             if (!AppSettings.Instance.FirstLaunch)
             {
@@ -85,6 +90,27 @@ public partial class App : Application
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private void ApplyLaunchAtStartupSetting()
+    {
+        if (_platformService != null)
+        {
+            _logger.Information("应用开机自启动设置: {Value}", AppSettings.Instance.LaunchAtStartup.Value);
+            _platformService.SetLaunchAtStartup(AppSettings.Instance.LaunchAtStartup.Value);
+        }
+    }
+
+    private void SubscribeToLaunchAtStartupChanges()
+    {
+        AppSettings.Instance.LaunchAtStartup.ValueChanged += (newValue) =>
+        {
+            _logger.Information("开机自启动设置变更，新值: {Value}", newValue);
+            if (_platformService != null)
+            {
+                _platformService.SetLaunchAtStartup(newValue);
+            }
+        };
     }
 
     private void SetupTrayIcon()

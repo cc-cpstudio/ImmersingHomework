@@ -1,11 +1,16 @@
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+using Microsoft.Win32;
 using Avalonia.Controls;
 using ImmersingHomework.Abstractions;
 using Serilog;
 
 namespace ImmersingHomework.Services.Platforms;
 
+[SupportedOSPlatform("windows")]
 public class WindowsPlatformService : PlatformServiceBase
 {
     private readonly ILogger _logger = Log.ForContext<WindowsPlatformService>();
@@ -66,5 +71,45 @@ public class WindowsPlatformService : PlatformServiceBase
                 SetWindowLong(hwnd, GWL_EXSTYLE, currentStyle | WS_EX_TOOLWINDOW);
             }
         };
+    }
+
+    public override void SetLaunchAtStartup(bool enabled)
+    {
+        try
+        {
+            var appName = "ImmersingHomework";
+            var exePath = Process.GetCurrentProcess().MainModule?.FileName;
+            
+            if (string.IsNullOrEmpty(exePath))
+            {
+                _logger.Error("Could not get executable path");
+                return;
+            }
+
+            using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run", true);
+            if (key == null)
+            {
+                _logger.Error("Could not open registry key");
+                return;
+            }
+
+            if (enabled)
+            {
+                key.SetValue(appName, exePath);
+                _logger.Information("Enabled launch at startup");
+            }
+            else
+            {
+                if (key.GetValue(appName) != null)
+                {
+                    key.DeleteValue(appName);
+                }
+                _logger.Information("Disabled launch at startup");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Failed to set launch at startup");
+        }
     }
 }
