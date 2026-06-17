@@ -9,6 +9,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using ImmersingHomework.Abstractions;
 using ImmersingHomework.Models;
+using ImmersingHomework.Services;
 using ImmersingHomework.Services.Platforms;
 using ImmersingHomework.Views;
 using Serilog;
@@ -43,6 +44,12 @@ public partial class App : Application
         _logger.Information("应用框架初始化完成");
         AppSettings.Instance.Initialize();
         _logger.Information("应用设置已初始化");
+
+        if (AppSettings.Instance.EnableClassIslandIPCService.Value)
+        {
+            _logger.Information("ClassIsland 联动已启用，初始化 ClassIsland 服务");
+            ClassIslandService.Instance.Initialize();
+        }
         
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {

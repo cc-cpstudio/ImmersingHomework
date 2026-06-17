@@ -9,14 +9,21 @@
         <StackPanel Orientation="Vertical" Spacing="8" Margin="12 12 12 0">
             <TextBlock Text="联动设置" FontSize="36" FontWeight="Bold"/>
             <TextBlock Text="设置软件与其他软件的联动行为。" FontSize="18"/>
-            <fa:FASettingsExpander Header="ClassIsland 联动">
+            <fa:FASettingsExpander Header="ClassIsland 联动" IsExpanded="True">
                 <fa:FASettingsExpander.IconSource>
                     <fa:FAImageIconSource Source="avares://ImmersingHomework/Assets/ClassIsland.png"/>
                 </fa:FASettingsExpander.IconSource>
                 <fa:FASettingsExpander.Footer>
-                    <!-- <ToggleSwitch x:Name="ClassIslandSwitch" OnContent="" OffContent="" IsCheckedChanged="ClassIslandSwitch_OnIsCheckedChanged"/> -->
-                    <TextBlock Text="骗你的，下个版本再做"/>
+                    <ToggleSwitch x:Name="ClassIslandSwitch" OnContent="" OffContent=""
+                                  IsCheckedChanged="ClassIslandSwitch_OnIsCheckedChanged"/>
                 </fa:FASettingsExpander.Footer>
+                <fa:FASettingsExpanderItem Content="接管科目设置"
+                                           IsEnabled="{Binding #ClassIslandSwitch.IsChecked}">
+                    <fa:FASettingsExpanderItem.Footer>
+                        <ToggleSwitch x:Name="TakeoverSubjectsSwitch" OnContent="" OffContent=""
+                                      IsCheckedChanged="TakeoverSubjectsSwitch_OnIsCheckedChanged"/>
+                    </fa:FASettingsExpanderItem.Footer>
+                </fa:FASettingsExpanderItem>
             </fa:FASettingsExpander>
         </StackPanel>
     </ScrollViewer>

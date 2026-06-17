@@ -25,7 +25,7 @@
                     </fa:FASettingsExpanderItem>
                     <fa:FASettingsExpanderItem Content="Avalonia 版本">
                         <fa:FASettingsExpanderItem.Footer>
-                            <TextBlock Text="12.0.0"/>
+                            <TextBlock Text="12.0.3"/>
                         </fa:FASettingsExpanderItem.Footer>
                     </fa:FASettingsExpanderItem>
                 </fa:FASettingsExpander>

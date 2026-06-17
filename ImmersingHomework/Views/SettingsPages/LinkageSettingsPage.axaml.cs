@@ -23,15 +23,25 @@ public partial class LinkageSettingsPage : UserControl
 
     public void Refresh()
     {
-        // ClassIslandSwitch.IsChecked = AppSettings.Instance.EnableClassIslandIPCService.Value;
+        ClassIslandSwitch.IsChecked = AppSettings.Instance.EnableClassIslandIPCService.Value;
+        TakeoverSubjectsSwitch.IsChecked = AppSettings.Instance.ClassIslandTakeoverSubjects.Value;
     }
     
     private void ClassIslandSwitch_OnIsCheckedChanged(object? sender, RoutedEventArgs e)
     {
-        // if (ClassIslandSwitch.IsChecked.HasValue)
-        // {
-        //     _logger.Information("ClassIsland 联动设置变更: {Value}", ClassIslandSwitch.IsChecked.Value);
-        //     AppSettings.Instance.EnableClassIslandIPCService.Value = ClassIslandSwitch.IsChecked.Value;
-        // }
+        if (ClassIslandSwitch.IsChecked.HasValue)
+        {
+            _logger.Information("ClassIsland 联动设置变更: {Value}", ClassIslandSwitch.IsChecked.Value);
+            AppSettings.Instance.EnableClassIslandIPCService.Value = ClassIslandSwitch.IsChecked.Value;
+        }
+    }
+    
+    private void TakeoverSubjectsSwitch_OnIsCheckedChanged(object? sender, RoutedEventArgs e)
+    {
+        if (TakeoverSubjectsSwitch.IsChecked.HasValue)
+        {
+            _logger.Information("接管科目设置变更: {Value}", TakeoverSubjectsSwitch.IsChecked.Value);
+            AppSettings.Instance.ClassIslandTakeoverSubjects.Value = TakeoverSubjectsSwitch.IsChecked.Value;
+        }
     }
 }

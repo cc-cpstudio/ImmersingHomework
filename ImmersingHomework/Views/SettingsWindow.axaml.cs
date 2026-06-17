@@ -15,6 +15,7 @@ public partial class SettingsWindow : FAAppWindow
     {
         _logger.Debug("SettingsWindow 初始化");
         InitializeComponent();
+        TitleBar.Height = 48;
         NavigationView.SelectedItem = NavigationView.MenuItems[0];
     }
 

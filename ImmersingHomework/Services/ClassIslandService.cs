@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,17 +16,22 @@ public class ClassIslandService
     public static ClassIslandService Instance { get; } = new ClassIslandService();
 
     private readonly ILogger _logger = Log.ForContext<ClassIslandService>();
-    public bool Initialized { get; init; } = false;
-    
     private IpcClient _client = new IpcClient();
+    private bool _initialized;
+
+    public bool Initialized => _initialized;
 
     public event EventHandler<string> HomeworkAssignmentReminder;
     
     private ClassIslandService()
     {
-        if (!AppSettings.Instance.EnableClassIslandIPCService.Value) return;
-        
-        Initialized = true;
+    }
+
+    public void Initialize()
+    {
+        if (_initialized) return;
+
+        _initialized = true;
         _client.JsonIpcProvider.AddNotifyHandler(IpcRoutedNotifyIds.OnBreakingTimeNotifyId, () =>
         {
             var lessonService = _client.Provider.CreateIpcProxy<IPublicLessonsService>(_client.PeerProxy);
@@ -33,21 +39,29 @@ public class ClassIslandService
             
             var classes = lessonService.CurrentClassPlan.Classes;
             
-            
             // TODO 实现获取上一节课
         });
         Connect();
     }
 
-    private async Task Connect()
+    public List<string> GetSubjects()
     {
-        await _client.Connect();
+        if (!_initialized) return new List<string>();
+        
+        var profileService = _client.Provider.CreateIpcProxy<IPublicProfileService>(_client.PeerProxy);
+        return profileService.Profile.Subjects.Select(s => s.Value.Name)
+            .Distinct().ToList();
     }
-    
-    private void CheckIfInitialized()
+
+    private async void Connect()
     {
-        if (!Initialized) throw new InvalidOperationException("ClassIsland IPC 服务未初始化");
+        try
+        {
+            await _client.Connect();
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "连接 ClassIsland IPC 服务失败");
+        }
     }
-    
-    
 }
