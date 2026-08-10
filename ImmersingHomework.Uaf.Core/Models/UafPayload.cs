@@ -31,7 +31,7 @@ public sealed record UafPayload
             throw new ArgumentException("Argument 'Subject' is unsatisfactory", nameof(Subject));
         if (string.IsNullOrEmpty(Date) || !Helper.IsValidIso8601DateTime(Date)) 
             throw new ArgumentException("Argument 'Date' is unsatisfactory", nameof(Date));
-        if (string.IsNullOrEmpty(Content) || Content.Length > 200)
+        if (string.IsNullOrEmpty(Content) || Content.Length > 2000)
             throw new ArgumentException("Argument 'Content' is unsatisfactory", nameof(Content));
     }
 }
