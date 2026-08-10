@@ -175,54 +175,92 @@ public partial class MainWindow : Window
     private async void ShareButton_OnClick(object? sender, RoutedEventArgs e)
     {
         var homework = _storageService.Load(Date);
-        var outputPath = $"Outputs/{Date}.png";
-        if (homework is not null)
+        if (homework is null) return;
+
+        bool? exportAsImage = null;
+        var formatDialog = new FAContentDialog()
         {
+            Title = "选择导出格式",
+            Content = "请选择要导出的文件格式：",
+            PrimaryButtonText = "导出为图片",
+            SecondaryButtonText = "导出为 PDF",
+            CloseButtonText = "取消"
+        };
+        formatDialog.PrimaryButtonClick += (_, _) => { exportAsImage = true; formatDialog.Hide(); };
+        formatDialog.SecondaryButtonClick += (_, _) => { exportAsImage = false; formatDialog.Hide(); };
+        formatDialog.CloseButtonClick += (_, _) => { formatDialog.Hide(); };
+        await formatDialog.ShowAsync(this);
+
+        if (exportAsImage is null) return;
+
+        if (exportAsImage.Value)
+        {
+            var outputPath = $"Outputs/{Date}.png";
             HomeworkImageService.HomeworkToImage(homework, outputPath);
-            var dialog = new FAContentDialog()
+            await ShowExportResultDialog(outputPath, isImage: true);
+        }
+        else
+        {
+            var outputPath = $"Outputs/{Date}.pdf";
+            var pdfService = new UafPdfService();
+            pdfService.InitializeFonts();
+            var pdfBytes = pdfService.GeneratePdfFromHomework(homework);
+            var fullPath = Path.GetFullPath(outputPath);
+            var directory = Path.GetDirectoryName(fullPath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
+            await File.WriteAllBytesAsync(fullPath, pdfBytes);
+            await ShowExportResultDialog(outputPath, isImage: false);
+        }
+    }
+
+    private async Task ShowExportResultDialog(string outputPath, bool isImage)
+    {
+        var fullPath = Path.GetFullPath(outputPath);
+        var dialog = new FAContentDialog()
+        {
+            Title = "作业分享",
+            Content = $"今日作业已保存到 {fullPath}，请自行查看或点击复制{(isImage ? "图片" : "文件路径")}。",
+            PrimaryButtonText = "打开",
+            SecondaryButtonText = "复制",
+            CloseButtonText = "关闭"
+        };
+        dialog.PrimaryButtonClick += (_, _) =>
+        {
+            try
             {
-                Title = "作业分享",
-                Content = $"今日作业已保存到 {Path.GetFullPath(outputPath)}，请自行查看或点击复制图片。",
-                PrimaryButtonText = "打开",
-                SecondaryButtonText = "复制",
-                CloseButtonText = "关闭"
-            };
-            dialog.PrimaryButtonClick += (s, e) =>
+                if (OperatingSystem.IsLinux())
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "xdg-open",
+                        Arguments = fullPath,
+                        UseShellExecute = false
+                    });
+                }
+                else if (OperatingSystem.IsMacOS())
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "open",
+                        Arguments = fullPath,
+                        UseShellExecute = false
+                    });
+                }
+                else
+                {
+                    Process.Start(new ProcessStartInfo(fullPath) { UseShellExecute = true });
+                }
+            }
+            catch (Exception ex)
             {
-                var fullPath = Path.GetFullPath(outputPath);
-                try
-                {
-                    if (OperatingSystem.IsLinux())
-                    {
-                        Process.Start(new ProcessStartInfo
-                        {
-                            FileName = "xdg-open",
-                            Arguments = fullPath,
-                            UseShellExecute = false
-                        });
-                    }
-                    else if (OperatingSystem.IsMacOS())
-                    {
-                        Process.Start(new ProcessStartInfo
-                        {
-                            FileName = "open",
-                            Arguments = fullPath,
-                            UseShellExecute = false
-                        });
-                    }
-                    else
-                    {
-                        // Windows
-                        Process.Start(new ProcessStartInfo(fullPath) { UseShellExecute = true });
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error(ex, "打开文件失败: {Path}", fullPath);
-                }
-                dialog.Hide();
-            };
-            dialog.SecondaryButtonClick += async (s, e) =>
+                _logger.Error(ex, "打开文件失败: {Path}", fullPath);
+            }
+            dialog.Hide();
+        };
+        if (isImage)
+        {
+            dialog.SecondaryButtonClick += async (_, _) =>
             {
                 var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
                 if (clipboard is null) return;
@@ -232,11 +270,20 @@ public partial class MainWindow : Window
                 await clipboard.FlushAsync();
                 dialog.Hide();
             };
-            dialog.CloseButtonClick += (s, e) =>
+        }
+        else
+        {
+            dialog.SecondaryButtonClick += async (_, _) =>
             {
+                var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+                if (clipboard is not null)
+                {
+                    await clipboard.SetTextAsync(fullPath);
+                }
                 dialog.Hide();
             };
-            await dialog.ShowAsync(this);
         }
+        dialog.CloseButtonClick += (_, _) => { dialog.Hide(); };
+        await dialog.ShowAsync(this);
     }
 }
