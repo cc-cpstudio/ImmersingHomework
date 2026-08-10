@@ -195,13 +195,13 @@ public partial class MainWindow : Window
 
         if (exportAsImage.Value)
         {
-            var outputPath = $"Outputs/{Date}.png";
+            var outputPath = $"Outputs/{Date:yyyy-MM-dd}_{DateTime.Now:HH-mm-ss}.png";
             HomeworkImageService.HomeworkToImage(homework, outputPath);
             await ShowExportResultDialog(outputPath, isImage: true);
         }
         else
         {
-            var outputPath = $"Outputs/{Date}.pdf";
+            var outputPath = $"Outputs/{Date:yyyy-MM-dd}_{DateTime.Now:HH-mm-ss}.pdf";
             var pdfService = new UafPdfService();
             pdfService.InitializeFonts();
             var pdfBytes = pdfService.GeneratePdfFromHomework(homework);
