@@ -40,6 +40,7 @@ public partial class MainWindow : Window
     }
 
     private readonly HomeworkStorageService _storageService;
+    private Bitmap? _clipboardBitmap;
 
     public MainWindow()
     {
@@ -225,18 +226,10 @@ public partial class MainWindow : Window
             {
                 var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
                 if (clipboard is null) return;
-                var bitmap = new Bitmap(outputPath); // 不使用 using，让剪贴板自己管理
-                try
-                {
-                    await clipboard.SetBitmapAsync(bitmap);
-                    await clipboard.FlushAsync();
-                    // 延迟一小段时间，确保剪贴板完成操作后再释放
-                    await Task.Delay(100);
-                }
-                finally
-                {
-                    bitmap.Dispose();
-                }
+                _clipboardBitmap?.Dispose();
+                _clipboardBitmap = new Bitmap(outputPath);
+                await clipboard.SetBitmapAsync(_clipboardBitmap);
+                await clipboard.FlushAsync();
                 dialog.Hide();
             };
             dialog.CloseButtonClick += (s, e) =>
