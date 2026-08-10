@@ -53,4 +53,8 @@
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\ImmersingHomework.Uaf.Core\ImmersingHomework.Uaf.Core.csproj" />
+    </ItemGroup>
 </Project>
