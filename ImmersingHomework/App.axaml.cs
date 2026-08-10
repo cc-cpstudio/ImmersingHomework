@@ -287,6 +287,7 @@ public partial class App : Application
             _mainWindow.WindowState = Avalonia.Controls.WindowState.FullScreen;
             _mainWindow.Activate();
             _mainWindow.Show();
+            _mainWindow.HomeworkPanel.Refresh();
         }
     }
 

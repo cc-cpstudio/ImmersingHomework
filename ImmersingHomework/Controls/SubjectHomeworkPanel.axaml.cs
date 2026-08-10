@@ -13,6 +13,8 @@ namespace ImmersingHomework.Controls;
 public partial class SubjectHomeworkPanel : UserControl
 {
     private readonly ILogger _logger = Log.ForContext<SubjectHomeworkPanel>();
+    private bool _suppressRefresh;
+
     public static readonly StyledProperty<string> SubjectProperty =
         AvaloniaProperty.Register<SubjectHomeworkPanel, string>(nameof(Subject));
 
@@ -39,14 +41,25 @@ public partial class SubjectHomeworkPanel : UserControl
         InitializeComponent();
         SubjectProperty.Changed.AddClassHandler<SubjectHomeworkPanel>((panel, e) => 
         {
+            if (panel._suppressRefresh) return;
             _logger.Debug("科目属性变化: {Subject}", panel.Subject);
             panel.Refresh();
         });
         HomeworkItemsProperty.Changed.AddClassHandler<SubjectHomeworkPanel>((panel, e) => 
         {
+            if (panel._suppressRefresh) return;
             _logger.Debug("作业项列表变化");
             panel.Refresh();
         });
+    }
+
+    public void SetData(string subject, List<HomeworkItem> homeworkItems)
+    {
+        _suppressRefresh = true;
+        Subject = subject;
+        HomeworkItems = homeworkItems;
+        _suppressRefresh = false;
+        Refresh();
     }
 
     public void Refresh()

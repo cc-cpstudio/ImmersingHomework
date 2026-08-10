@@ -83,4 +83,28 @@ public class HomeworkStorageService
             return new Homework(date, []);
         }
     }
+
+    public async Task<Homework?> LoadAsync(DateOnly date)
+    {
+        _logger.Debug("正在异步加载作业，日期: {Date}", date);
+        try
+        {
+            var filePath = GetFilePath(date);
+            if (!File.Exists(filePath))
+            {
+                _logger.Information("作业文件不存在，返回空作业，日期: {Date}", date);
+                return new Homework(date, []);
+            }
+            string json = await File.ReadAllTextAsync(filePath);
+            var homework = JsonSerializer.Deserialize<Homework>(json,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            _logger.Debug("作业已异步加载，日期: {Date}", date);
+            return homework;
+        }
+        catch (Exception ex)
+        {
+            _logger.Warning(ex, "异步加载作业时出错，返回空作业，日期: {Date}", date);
+            return new Homework(date, []);
+        }
+    }
 }

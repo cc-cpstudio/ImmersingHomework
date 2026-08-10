@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
@@ -37,7 +38,7 @@ public partial class  HomeworkPanel : UserControl
         {
             _logger.Debug("日期改变: {Date}", panel.Date);
             panel.DateChanged?.Invoke(panel.Date);
-            panel.Refresh();
+            _ = panel.RefreshAsync(panel.Date);
         });
         Date = DateOnly.FromDateTime(DateTime.Now);
         _logger.Information("HomeworkPanel 初始化完成");
@@ -45,14 +46,18 @@ public partial class  HomeworkPanel : UserControl
 
     public void Refresh()
     {
-        Refresh(Date);
+        _ = RefreshAsync(Date);
     }
 
-    public void Refresh(DateOnly date)
+    public async Task RefreshAsync(DateOnly date)
     {
+#if DEBUG
+        var sw = Stopwatch.StartNew();
+#endif
         _logger.Debug("刷新作业面板，日期: {Date}", date);
+        SubjectHomeworkPanels.IsVisible = false;
         SubjectHomeworkPanels.Children.Clear();
-        var homework = _storageService.Load(date);
+        var homework = await _storageService.LoadAsync(date);
 
         var hasHomework = false;
         if (homework != null)
@@ -91,11 +96,8 @@ public partial class  HomeworkPanel : UserControl
                         var subjectItems = homework.GetHomeworkItemsBySubject(subject);
                         if (subjectItems != null && subjectItems.Count > 0)
                         {
-                            var subjectPanel = new SubjectHomeworkPanel
-                            {
-                                Subject = subject,
-                                HomeworkItems = subjectItems
-                            };
+                            var subjectPanel = new SubjectHomeworkPanel();
+                            subjectPanel.SetData(subject, subjectItems);
                             subjectPanel.EditRequested += OnEditRequested;
                             SubjectHomeworkPanels.Children.Add(subjectPanel);
                             hasHomework = true;
@@ -105,12 +107,18 @@ public partial class  HomeworkPanel : UserControl
             }
         }
 
+        SubjectHomeworkPanels.IsVisible = true;
+
         if (NoHomeworkText != null)
         {
             NoHomeworkText.IsVisible = !hasHomework;
         }
         
         _logger.Debug("作业面板刷新完成，有作业: {HasHomework}", hasHomework);
+#if DEBUG
+        sw.Stop();
+        _logger.Debug("Refresh 方法执行耗时: {Elapsed}ms", sw.Elapsed.TotalMilliseconds);
+#endif
     }
 
     private async void OnEditRequested(HomeworkItem item)
@@ -153,7 +161,7 @@ public partial class  HomeworkPanel : UserControl
             }
             
             _storageService.Save(currentHomework);
-            Refresh();
+            await RefreshAsync(Date);
         }
     }
 }

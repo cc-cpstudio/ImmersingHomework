@@ -13,6 +13,21 @@ namespace ImmersingHomework.Controls;
 
 public partial class HomeworkItemPanel : UserControl
 {
+    private static readonly IBrush defaultColor = new SolidColorBrush(Avalonia.Media.Color.FromRgb(220, 240, 255));
+
+    private static Dictionary<string, IBrush> BuildTagColorCache()
+    {
+        var cache = new Dictionary<string, IBrush>();
+        foreach (var tagModel in AppSettings.Instance.Tags)
+        {
+            if (!string.IsNullOrEmpty(tagModel.Name))
+            {
+                cache[tagModel.Name] = tagModel.Color.ToSolidColorBrush();
+            }
+        }
+        return cache;
+    }
+    
     private readonly ILogger _logger = Log.ForContext<HomeworkItemPanel>();
     public static readonly StyledProperty<HomeworkItem> HomeworkItemProperty =
         AvaloniaProperty.Register<HomeworkItemPanel, HomeworkItem>(nameof(HomeworkItem));
@@ -57,30 +72,21 @@ public partial class HomeworkItemPanel : UserControl
         }
         TagPanel.Children.Clear();
         
-        var defaultColors = new List<IBrush>
-        {
-            new SolidColorBrush(Avalonia.Media.Color.FromRgb(220, 240, 255)), 
-            new SolidColorBrush(Avalonia.Media.Color.FromRgb(220, 255, 230)), 
-            new SolidColorBrush(Avalonia.Media.Color.FromRgb(255, 250, 220)), 
-            new SolidColorBrush(Avalonia.Media.Color.FromRgb(255, 230, 255)), 
-            new SolidColorBrush(Avalonia.Media.Color.FromRgb(255, 235, 230))
-        };
-
         var tags = HomeworkItem.Tags ?? Enumerable.Empty<string>();
         _logger.Debug("作业项有 {Count} 个标签", tags.Count());
+        
+        var tagColorCache = BuildTagColorCache();
         
         for (int i = 0; i < tags.Count(); i++)
         {
             var tagName = tags.ElementAt(i);
             if (!string.IsNullOrEmpty(tagName))
             {
-                IBrush tagColor = defaultColors[i % defaultColors.Count];
-                
-                // 在 AppSettings 中查找对应标签的颜色
-                var tagModel = AppSettings.Instance.Tags.FirstOrDefault(t => t.Name == tagName);
-                if (tagModel != null)
+                var tagColor = defaultColor;
+
+                if (tagColorCache.TryGetValue(tagName, out var cachedColor))
                 {
-                    tagColor = tagModel.Color.ToSolidColorBrush();
+                    tagColor = cachedColor;
                 }
                 
                 var tag = new Tag
