@@ -107,4 +107,77 @@ public class HomeworkStorageService
             return new Homework(date, []);
         }
     }
+
+    public List<DateOnly> GetAllHomeworkDates()
+    {
+        var dataDir = GetDataDir();
+        if (!Directory.Exists(dataDir))
+            return [];
+
+        var dates = new List<DateOnly>();
+        foreach (var file in Directory.GetFiles(dataDir, "*.json"))
+        {
+            var fileName = Path.GetFileNameWithoutExtension(file);
+            if (DateOnly.TryParse(fileName, out var date))
+                dates.Add(date);
+        }
+        return dates;
+    }
+
+    public bool Delete(DateOnly date)
+    {
+        var filePath = GetFilePath(date);
+        if (!File.Exists(filePath))
+            return false;
+
+        _logger.Information("删除作业文件，日期: {Date}", date);
+        File.Delete(filePath);
+        return true;
+    }
+
+    public int DeleteBeforeAndEmpty(DateTimeOffset cutoffDate)
+    {
+        var dataDir = GetDataDir();
+        if (!Directory.Exists(dataDir))
+            return 0;
+
+        var deletedCount = 0;
+        var cutoff = DateOnly.FromDateTime(cutoffDate.DateTime);
+
+        foreach (var file in Directory.GetFiles(dataDir, "*.json"))
+        {
+            var fileName = Path.GetFileNameWithoutExtension(file);
+            if (!DateOnly.TryParse(fileName, out var date))
+                continue;
+
+            bool shouldDelete = date <= cutoff;
+
+            if (!shouldDelete)
+            {
+                try
+                {
+                    var content = File.ReadAllText(file);
+                    var homework = JsonSerializer.Deserialize<Homework>(content,
+                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    if (homework is { HomeworkItems.Count: 0 })
+                        shouldDelete = true;
+                }
+                catch
+                {
+                    // corrupted file, delete it
+                    shouldDelete = true;
+                }
+            }
+
+            if (shouldDelete)
+            {
+                _logger.Information("删除作业文件，日期: {Date}", date);
+                File.Delete(file);
+                deletedCount++;
+            }
+        }
+
+        _logger.Information("共删除 {Count} 个作业文件", deletedCount);
+        return deletedCount;
+    }
 }

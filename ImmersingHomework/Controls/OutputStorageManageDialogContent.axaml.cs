@@ -1,11 +1,15 @@
+using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using FluentAvalonia.UI.Controls;
 
 namespace ImmersingHomework.Controls;
 
 public partial class OutputStorageManageDialogContent : UserControl
 {
+    public DateTimeOffset? SelectedDate { get; private set; }
+
     public OutputStorageManageDialogContent()
     {
         InitializeComponent();
@@ -13,6 +17,15 @@ public partial class OutputStorageManageDialogContent : UserControl
 
     private void CalendarDatePicker_OnSelectedDateChanged(object? sender, SelectionChangedEventArgs e)
     {
-        throw new System.NotImplementedException();
+        SelectedDate = CalendarDatePicker.SelectedDate;
+    }
+
+    public void OnPrimaryButtonClick(FAContentDialogButtonClickEventArgs args)
+    {
+        if (SelectedDate is null)
+        {
+            args.Cancel = true;
+            return;
+        }
     }
 }

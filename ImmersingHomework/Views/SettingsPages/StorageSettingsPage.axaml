@@ -16,7 +16,7 @@
                 <fa:FASettingsExpanderItem.Footer>
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <TextBlock x:Name="HomeworkOccupationTextBlock"/>
-                        <Button>管理</Button>
+                        <Button x:Name="HomeworkManageButton" Click="HomeworkManageButton_OnClick">管理</Button>
                     </StackPanel>
                 </fa:FASettingsExpanderItem.Footer>
             </fa:FASettingsExpanderItem>
@@ -24,7 +24,7 @@
                 <fa:FASettingsExpanderItem.Footer>
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <TextBlock x:Name="OutputOccupationTextBlock"/>
-                        <Button>管理</Button>
+                        <Button x:Name="OutputManageButton" Click="OutputManageButton_OnClick">管理</Button>
                     </StackPanel>
                 </fa:FASettingsExpanderItem.Footer>
             </fa:FASettingsExpanderItem>
@@ -32,7 +32,7 @@
                 <fa:FASettingsExpanderItem.Footer>
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <TextBlock x:Name="LogOccupationTextBlock"/>
-                        <Button>管理</Button>
+                        <Button x:Name="LogManageButton" Click="LogManageButton_OnClick">管理</Button>
                     </StackPanel>
                 </fa:FASettingsExpanderItem.Footer>
             </fa:FASettingsExpanderItem>
