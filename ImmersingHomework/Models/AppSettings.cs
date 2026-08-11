@@ -27,6 +27,8 @@ public class AppSettings
 
     public ObservableCollection<string> Subjects { get; set; } = [];
     public ObservableCollection<TagModel> Tags { get; set; } = [];
+
+    public ObservableCollection<string> HomeworkTemplates { get; set; } = [];
     
     public bool FirstLaunch { get; set; } = true;
     
@@ -61,6 +63,11 @@ public class AppSettings
         {
             Tags.Add(tag);
         }
+
+        foreach (var homeworkTemplate in loaded.HomeworkTemplates)
+        {
+            HomeworkTemplates.Add(homeworkTemplate);
+        }
         FirstLaunch = loaded.FirstLaunch;
         LaunchAtStartup.Value = loaded.LaunchAtStartup.Value;
         EnableClassIslandIPCService.Value = loaded.EnableClassIslandIPCService.Value;
@@ -77,6 +84,7 @@ public class AppSettings
     {
         Subjects.CollectionChanged += (s, e) => MarkDirty();
         Tags.CollectionChanged += (s, e) => MarkDirty();
+        HomeworkTemplates.CollectionChanged += (s, e) => MarkDirty();
         
         LaunchAtStartup.ValueChanged += _ => MarkDirty();
         EnableClassIslandIPCService.ValueChanged += _ => MarkDirty();
