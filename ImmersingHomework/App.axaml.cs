@@ -9,6 +9,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using ImmersingHomework.Abstractions;
 using ImmersingHomework.Models;
+using ImmersingHomework.Shared.Models;
 using ImmersingHomework.Services;
 using ImmersingHomework.Services.Platforms;
 using ImmersingHomework.Views;

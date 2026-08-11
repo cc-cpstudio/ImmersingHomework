@@ -4,7 +4,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
-using ImmersingHomework.Models;
+using ImmersingHomework.Shared.Models;
 using SkiaSharp;
 using ZXing;
 using ZXing.QrCode;
@@ -90,7 +90,7 @@ public static class HomeworkQrCodeService
             {
                 writer.WriteStartArray("t");
                 foreach (var tag in item.Tags)
-                    writer.WriteStringValue(tag);
+                    writer.WriteStringValue(tag.Name);
                 writer.WriteEndArray();
             }
             if (item.TemplateName is not null)
@@ -118,11 +118,11 @@ public static class HomeworkQrCodeService
         var items = new List<HomeworkItem>();
         foreach (var elem in root.GetProperty("i").EnumerateArray())
         {
-            var tags = new List<string>();
+            var tags = new List<TagModel>();
             if (elem.TryGetProperty("t", out var t))
             {
                 foreach (var tag in t.EnumerateArray())
-                    tags.Add(tag.GetString()!);
+                    tags.Add(new TagModel { Name = tag.GetString()! });
             }
             List<string>? templateParams = null;
             if (elem.TryGetProperty("p", out var p))

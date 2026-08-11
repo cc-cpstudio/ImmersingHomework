@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using ClassIsland.Shared.IPC;
 using ClassIsland.Shared.IPC.Abstractions.Services;
 using dotnetCampus.Ipc.CompilerServices.GeneratedProxies;
-using ImmersingHomework.Models;
+using ImmersingHomework.Shared.Models;
 using Serilog;
 
 namespace ImmersingHomework.Services;

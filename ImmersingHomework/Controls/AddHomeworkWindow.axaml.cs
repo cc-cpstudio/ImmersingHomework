@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
 using FluentAvalonia.UI.Controls;
-using ImmersingHomework.Models;
+using ImmersingHomework.Shared.Models;
 using Serilog;
 
 namespace ImmersingHomework.Controls;
@@ -93,7 +93,7 @@ public partial class AddHomeworkWindow : UserControl
         _logger.Debug("获取作业数据");
         string? subject = SubjectPicker.GetSelectedSubject();
         string? content = ContentInput?.GetContent();
-        List<string> tags = TagPicker.GetSelectedTags();
+        List<TagModel> tags = TagPicker.GetSelectedTags();
 
         if (string.IsNullOrEmpty(subject) || string.IsNullOrEmpty(content))
         {

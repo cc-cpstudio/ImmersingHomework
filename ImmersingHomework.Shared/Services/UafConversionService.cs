@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ImmersingHomework.Models;
+using ImmersingHomework.Shared.Models;
 using ImmersingHomework.Uaf.Core.Models;
 
 namespace ImmersingHomework.Services;
@@ -21,7 +21,7 @@ public static class UafConversionService
             subject: item.Subject,
             date: date.ToString("yyyy-MM-dd"),
             content: item.Content,
-            tags: item.Tags?.AsReadOnly() ?? new List<string>().AsReadOnly()
+            tags: item.Tags?.Select(t => t.Name).ToList().AsReadOnly() ?? new List<string>().AsReadOnly()
         );
     }
 
@@ -43,7 +43,7 @@ public static class UafConversionService
         return new HomeworkItem(
             subject: payload.Subject,
             content: payload.Content,
-            tags: payload.Tags?.ToList() ?? new List<string>()
+            tags: payload.Tags?.Select(t => new TagModel { Name = t }).ToList() ?? new List<TagModel>()
         );
     }
 

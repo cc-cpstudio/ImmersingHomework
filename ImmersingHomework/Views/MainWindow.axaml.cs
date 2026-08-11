@@ -13,8 +13,9 @@ using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using ImmersingHomework.Controls;
-using ImmersingHomework.Enums;
+using ImmersingHomework.Shared.Enums;
 using ImmersingHomework.Models;
+using ImmersingHomework.Shared.Models;
 using ImmersingHomework.Services;
 using Serilog;
 

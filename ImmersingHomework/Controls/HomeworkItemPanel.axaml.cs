@@ -6,7 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
-using ImmersingHomework.Models;
+using ImmersingHomework.Shared.Models;
 using Serilog;
 
 namespace ImmersingHomework.Controls;
@@ -15,19 +15,6 @@ public partial class HomeworkItemPanel : UserControl
 {
     private static readonly IBrush defaultColor = new SolidColorBrush(Avalonia.Media.Color.FromRgb(220, 240, 255));
 
-    private static Dictionary<string, IBrush> BuildTagColorCache()
-    {
-        var cache = new Dictionary<string, IBrush>();
-        foreach (var tagModel in AppSettings.Instance.Tags)
-        {
-            if (!string.IsNullOrEmpty(tagModel.Name))
-            {
-                cache[tagModel.Name] = tagModel.Color.ToSolidColorBrush();
-            }
-        }
-        return cache;
-    }
-    
     private readonly ILogger _logger = Log.ForContext<HomeworkItemPanel>();
     public static readonly StyledProperty<HomeworkItem> HomeworkItemProperty =
         AvaloniaProperty.Register<HomeworkItemPanel, HomeworkItem>(nameof(HomeworkItem));
@@ -72,26 +59,20 @@ public partial class HomeworkItemPanel : UserControl
         }
         TagPanel.Children.Clear();
         
-        var tags = HomeworkItem.Tags ?? Enumerable.Empty<string>();
-        _logger.Debug("作业项有 {Count} 个标签", tags.Count());
+        var tags = HomeworkItem.Tags;
+        if (tags == null) return;
+        _logger.Debug("作业项有 {Count} 个标签", tags.Count);
         
-        var tagColorCache = BuildTagColorCache();
-        
-        for (int i = 0; i < tags.Count(); i++)
+        for (int i = 0; i < tags.Count; i++)
         {
-            var tagName = tags.ElementAt(i);
-            if (!string.IsNullOrEmpty(tagName))
+            var tagModel = tags[i];
+            if (!string.IsNullOrEmpty(tagModel.Name))
             {
-                var tagColor = defaultColor;
-
-                if (tagColorCache.TryGetValue(tagName, out var cachedColor))
-                {
-                    tagColor = cachedColor;
-                }
+                var tagColor = tagModel.Color.ToSolidColorBrush();
                 
                 var tag = new Tag
                 {
-                    TagName = tagName,
+                    TagName = tagModel.Name,
                     TagColor = tagColor
                 };
                 TagPanel.Children.Add(tag);

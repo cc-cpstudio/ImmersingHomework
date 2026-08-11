@@ -9,7 +9,7 @@ using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas;
 using iText.Kernel.Pdf.Filespec;
-using ImmersingHomework.Models;
+using ImmersingHomework.Shared.Models;
 using ImmersingHomework.Uaf.Core.Models;
 using ImmersingHomework.Uaf.Core.Services;
 using IOPath = System.IO.Path;
@@ -72,13 +72,13 @@ public class UafPdfService
         return PdfFontFactory.CreateFont(fontData, PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.FORCE_EMBEDDED);
     }
 
-    public byte[] GeneratePdf(List<UafPayload> payloads, DateOnly date)
+    public byte[] GeneratePdf(List<UafPayload> payloads, DateOnly date, IReadOnlyList<TagModel> tagDefinitions)
     {
         EnsureFonts();
-        return GeneratePdfInternal(payloads, date, BuildTagColors());
+        return GeneratePdfInternal(payloads, date, BuildTagColors(tagDefinitions));
     }
 
-    public byte[] GeneratePdfFromCsv(string csv)
+    public byte[] GeneratePdfFromCsv(string csv, IReadOnlyList<TagModel> tagDefinitions)
     {
         EnsureFonts();
         var payloads = UafCsvService.Parse(csv).GetAwaiter().GetResult();
@@ -86,14 +86,15 @@ public class UafPdfService
             throw new ArgumentException("CSV contains no valid payloads");
 
         var date = DateOnly.Parse(payloads[0].Date);
-        return GeneratePdfInternal(payloads, date, BuildTagColors());
+        return GeneratePdfInternal(payloads, date, BuildTagColors(tagDefinitions));
     }
 
     public byte[] GeneratePdfFromHomework(Homework homework)
     {
         EnsureFonts();
         var payloads = UafConversionService.HomeworkToUafPayloads(homework);
-        return GeneratePdfInternal(payloads, homework.Date, BuildTagColors());
+        var allTags = homework.HomeworkItems.SelectMany(i => i.Tags).ToList();
+        return GeneratePdfInternal(payloads, homework.Date, BuildTagColors(allTags));
     }
 
     private byte[] GeneratePdfInternal(List<UafPayload> payloads, DateOnly date, Dictionary<string, PdfDeviceRgb> tagColors)
@@ -283,10 +284,10 @@ public class UafPdfService
             InitializeFonts();
     }
 
-    private static Dictionary<string, PdfDeviceRgb> BuildTagColors()
+    private static Dictionary<string, PdfDeviceRgb> BuildTagColors(IReadOnlyList<TagModel> tagModels)
     {
         var result = new Dictionary<string, PdfDeviceRgb>();
-        foreach (var tag in AppSettings.Instance.Tags)
+        foreach (var tag in tagModels)
         {
             result[tag.Name] = new PdfDeviceRgb(tag.Color.R / 255f, tag.Color.G / 255f, tag.Color.B / 255f);
         }

@@ -1,4 +1,4 @@
-namespace ImmersingHomework.Enums;
+namespace ImmersingHomework.Shared.Enums;
 
 public enum ExportFormat
 {

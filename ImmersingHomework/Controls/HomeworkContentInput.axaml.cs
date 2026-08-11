@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Interactivity;
 using ImmersingHomework.Models;
+using ImmersingHomework.Shared.Models;
 using Serilog;
 
 namespace ImmersingHomework.Controls;

@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Media;
 using ImmersingHomework.Services;
+using ImmersingHomework.Shared.Models;
 using Serilog;
 
 namespace ImmersingHomework.Models;

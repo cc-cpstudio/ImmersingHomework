@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using ImmersingHomework.Models;
+using ImmersingHomework.Shared.Models;
 using Serilog;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
@@ -198,30 +198,13 @@ public class HomeworkImageService
 
                 if (item.Tags != null && item.Tags.Count > 0)
                 {
-                    var tagModels = new List<TagElement>();
-                    foreach (var tagName in item.Tags)
+                    var tags = item.Tags.Select(t => new TagElement
                     {
-                        var tagModel = AppSettings.Instance.Tags.FirstOrDefault(t => t.Name == tagName);
-                        if (tagModel != null)
-                        {
-                            var tagColor = tagModel.Color;
-                            tagModels.Add(new TagElement
-                            {
-                                Name = tagName,
-                                Color = Color.FromRgb(tagColor.R, tagColor.G, tagColor.B)
-                            });
-                        }
-                        else
-                        {
-                            tagModels.Add(new TagElement
-                            {
-                                Name = tagName,
-                                Color = Color.FromRgb(220, 240, 255)
-                            });
-                        }
-                    }
+                        Name = t.Name,
+                        Color = Color.FromRgb(t.Color.R, t.Color.G, t.Color.B)
+                    }).ToList();
 
-                    elements.Add(new TagGroupElement { Tags = tagModels });
+                    elements.Add(new TagGroupElement { Tags = tags });
                 }
             }
         }
