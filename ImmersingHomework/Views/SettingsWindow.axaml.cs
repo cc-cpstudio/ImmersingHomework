@@ -35,6 +35,9 @@ public partial class SettingsWindow : FAAppWindow
                 case "Tag":
                     ContentFrame.Navigate(typeof(TagSettingsPage));
                     break;
+                case "HomeworkTemplate":
+                    ContentFrame.Navigate(typeof(HomeworkTemplateSettingsPage));
+                    break;
                 case "About":
                     ContentFrame.Navigate(typeof(AboutPage));
                     break;

@@ -27,6 +27,11 @@
                         <fa:FASymbolIconSource Symbol="Tag"/>
                     </fa:FANavigationViewItem.IconSource>
                 </fa:FANavigationViewItem>
+                <fa:FANavigationViewItem Content="作业模板设置" Tag="HomeworkTemplate">
+                    <fa:FANavigationViewItem.IconSource>
+                        <fa:FASymbolIconSource Symbol="Code"/>
+                    </fa:FANavigationViewItem.IconSource>
+                </fa:FANavigationViewItem>
                 <fa:FANavigationViewItem Content="一言设置" Tag="Hitokoto">
                     <fa:FANavigationViewItem.IconSource>
                         <fa:FASymbolIconSource Symbol="Comment"/>
