@@ -11,6 +11,8 @@ public class HomeworkItem
     public string Subject { get; set; }
     public string Content { get; set; }
     public List<string> Tags { get; set; }
+    public string? TemplateName { get; set; }
+    public List<string>? TemplateParameters { get; set; }
 
     public HomeworkItem(string subject, string content, List<string> tags)
     {

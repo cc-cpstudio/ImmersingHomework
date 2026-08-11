@@ -37,7 +37,7 @@ public partial class AddHomeworkWindow : UserControl
         {
             _logger.Debug("填充编辑表单");
             SubjectPicker.SetSelectedSubject(existingItem.Subject);
-            ContentInput.Text = existingItem.Content;
+            ContentInput.SetHomeworkContent(existingItem.Content, existingItem.TemplateName, existingItem.TemplateParameters);
             TagPicker.SetSelectedTags(existingItem.Tags);
         };
     }
@@ -59,7 +59,9 @@ public partial class AddHomeworkWindow : UserControl
                 _logger.Debug("更新现有作业，ID: {Id}", _existingItem.Id);
                 Result = new HomeworkItem(Result.Subject, Result.Content, Result.Tags)
                 {
-                    Id = _existingItem.Id
+                    Id = _existingItem.Id,
+                    TemplateName = Result.TemplateName,
+                    TemplateParameters = Result.TemplateParameters
                 };
             }
             IsDeleted = false;
@@ -90,7 +92,7 @@ public partial class AddHomeworkWindow : UserControl
     {
         _logger.Debug("获取作业数据");
         string? subject = SubjectPicker.GetSelectedSubject();
-        string? content = ContentInput?.Text?.Trim();
+        string? content = ContentInput?.GetContent();
         List<string> tags = TagPicker.GetSelectedTags();
 
         if (string.IsNullOrEmpty(subject) || string.IsNullOrEmpty(content))
@@ -100,6 +102,9 @@ public partial class AddHomeworkWindow : UserControl
         }
         
         _logger.Debug("作业数据获取成功，科目: {Subject}, 标签: {TagCount}", subject, tags.Count);
-        return new HomeworkItem(subject, content, tags);
+        var item = new HomeworkItem(subject, content, tags);
+        item.TemplateName = ContentInput?.GetTemplateName();
+        item.TemplateParameters = ContentInput?.GetTemplateParameters();
+        return item;
     }
 }
