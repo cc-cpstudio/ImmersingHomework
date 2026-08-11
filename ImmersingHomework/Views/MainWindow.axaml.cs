@@ -8,6 +8,7 @@ using System.Timers;
 using Avalonia.Controls;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
@@ -178,17 +179,21 @@ public partial class MainWindow : Window
         if (homework is null) return;
 
         bool? exportAsImage = null;
+        var formatPanel = new StackPanel { Spacing = 8, Margin = new Avalonia.Thickness(0, 8, 0, 0) };
+        var imageBtn = new Button { Content = "导出为图片", HorizontalAlignment = HorizontalAlignment.Stretch };
+        var pdfBtn = new Button { Content = "导出为 PDF", HorizontalAlignment = HorizontalAlignment.Stretch };
         var formatDialog = new FAContentDialog()
         {
             Title = "选择导出格式",
-            Content = "请选择要导出的文件格式：",
-            PrimaryButtonText = "导出为图片",
-            SecondaryButtonText = "导出为 PDF",
+            Content = formatPanel,
             CloseButtonText = "取消"
         };
-        formatDialog.PrimaryButtonClick += (_, _) => { exportAsImage = true; formatDialog.Hide(); };
-        formatDialog.SecondaryButtonClick += (_, _) => { exportAsImage = false; formatDialog.Hide(); };
+        imageBtn.Click += (_, _) => { exportAsImage = true; formatDialog.Hide(); };
+        pdfBtn.Click += (_, _) => { exportAsImage = false; formatDialog.Hide(); };
         formatDialog.CloseButtonClick += (_, _) => { formatDialog.Hide(); };
+        formatPanel.Children.Add(new TextBlock { Text = "请选择要导出的文件格式：" });
+        formatPanel.Children.Add(imageBtn);
+        formatPanel.Children.Add(pdfBtn);
         await formatDialog.ShowAsync(this);
 
         if (exportAsImage is null) return;
