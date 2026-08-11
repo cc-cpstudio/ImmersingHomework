@@ -43,6 +43,21 @@ public partial class App : Application
     public override void OnFrameworkInitializationCompleted()
     {
         _logger.Information("应用框架初始化完成");
+
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            _desktopLifetime = desktop;
+
+            if (!Program.IsSingleInstance)
+            {
+                _logger.Warning("检测到已有实例运行，显示多实例提示窗口");
+                desktop.MainWindow = new InstanceAlreadyRunningWindow();
+                desktop.MainWindow.Show();
+                base.OnFrameworkInitializationCompleted();
+                return;
+            }
+        }
+
         AppSettings.Instance.Initialize();
         _logger.Information("应用设置已初始化");
 
@@ -52,9 +67,8 @@ public partial class App : Application
             ClassIslandService.Instance.Initialize();
         }
         
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        if (_desktopLifetime != null)
         {
-            _desktopLifetime = desktop;
             _platformService = CreatePlatformService();
             
             // 应用当前的开机自启动设置
@@ -75,7 +89,7 @@ public partial class App : Application
                     _platformService.HideFromAltTab(_floatingButtonWindow);
                 }
                 
-                desktop.MainWindow = _floatingButtonWindow;
+                _desktopLifetime.MainWindow = _floatingButtonWindow;
             
                 _mainWindow.WindowMinimized += MainWindow_WindowMinimized;
                 _mainWindow.WindowActivated += MainWindow_WindowActivated;
@@ -92,7 +106,7 @@ public partial class App : Application
             else
             {
                 _welcomeWindow = new WelcomeWindow();
-                desktop.MainWindow = _welcomeWindow;
+                _desktopLifetime.MainWindow = _welcomeWindow;
                 _welcomeWindow.Show();
             }
         }
@@ -201,8 +215,8 @@ public partial class App : Application
     {
         if (_desktopLifetime != null)
         {
-            var processName = Process.GetCurrentProcess().ProcessName;
             var processPath = Environment.ProcessPath;
+            Program.ReleaseLock();
             _desktopLifetime.Shutdown();
             if (!string.IsNullOrEmpty(processPath))
             {
