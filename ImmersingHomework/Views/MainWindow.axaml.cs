@@ -13,6 +13,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using ImmersingHomework.Controls;
+using ImmersingHomework.Enums;
 using ImmersingHomework.Models;
 using ImmersingHomework.Services;
 using Serilog;
@@ -178,33 +179,36 @@ public partial class MainWindow : Window
         var homework = _storageService.Load(Date);
         if (homework is null) return;
 
-        bool? exportAsImage = null;
+        ExportFormat? exportFormat = null;
         var formatPanel = new StackPanel { Spacing = 8, Margin = new Avalonia.Thickness(0, 8, 0, 0) };
         var imageBtn = new Button { Content = "导出为图片", HorizontalAlignment = HorizontalAlignment.Stretch };
         var pdfBtn = new Button { Content = "导出为 PDF", HorizontalAlignment = HorizontalAlignment.Stretch };
+        var qrBtn = new Button { Content = "通过二维码导出到其它设备", HorizontalAlignment = HorizontalAlignment.Stretch };
         var formatDialog = new FAContentDialog()
         {
             Title = "选择导出格式",
             Content = formatPanel,
             CloseButtonText = "取消"
         };
-        imageBtn.Click += (_, _) => { exportAsImage = true; formatDialog.Hide(); };
-        pdfBtn.Click += (_, _) => { exportAsImage = false; formatDialog.Hide(); };
+        imageBtn.Click += (_, _) => { exportFormat = ExportFormat.Image; formatDialog.Hide(); };
+        pdfBtn.Click += (_, _) => { exportFormat = ExportFormat.Pdf; formatDialog.Hide(); };
+        qrBtn.Click += (_, _) => { exportFormat = ExportFormat.QrCode; formatDialog.Hide(); };
         formatDialog.CloseButtonClick += (_, _) => { formatDialog.Hide(); };
         formatPanel.Children.Add(new TextBlock { Text = "请选择要导出的文件格式：" });
         formatPanel.Children.Add(imageBtn);
         formatPanel.Children.Add(pdfBtn);
+        formatPanel.Children.Add(qrBtn);
         await formatDialog.ShowAsync(this);
 
-        if (exportAsImage is null) return;
+        if (exportFormat is null) return;
 
-        if (exportAsImage.Value)
+        if (exportFormat == ExportFormat.Image)
         {
             var outputPath = $"Outputs/{Date:yyyy-MM-dd}_{DateTime.Now:HH-mm-ss}.png";
             HomeworkImageService.HomeworkToImage(homework, outputPath);
             await ShowExportResultDialog(outputPath, isImage: true);
         }
-        else
+        else if (exportFormat == ExportFormat.Pdf)
         {
             var outputPath = $"Outputs/{Date:yyyy-MM-dd}_{DateTime.Now:HH-mm-ss}.pdf";
             var pdfService = new UafPdfService();
@@ -216,6 +220,9 @@ public partial class MainWindow : Window
                 Directory.CreateDirectory(directory);
             await File.WriteAllBytesAsync(fullPath, pdfBytes);
             await ShowExportResultDialog(outputPath, isImage: false);
+        }
+        else if (exportFormat == ExportFormat.QrCode)
+        {
         }
     }
 
