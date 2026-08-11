@@ -225,7 +225,21 @@ public partial class MainWindow : Window
         {
             var outputPath = $"Outputs/{Date:yyyy-MM-dd}_{DateTime.Now:HH-mm-ss}.png";
             var qrOutputPath = HomeworkQrCodeService.GenerateQrCode(homework, outputPath);
-            await ShowExportResultDialog(qrOutputPath, isImage: true);
+            if (qrOutputPath is null)
+            {
+                var errorDialog = new FAContentDialog()
+                {
+                    Title = "二维码导出失败",
+                    Content = "作业数据量过大，超出了二维码的存储上限，请尝试减少作业条目数量。",
+                    CloseButtonText = "关闭"
+                };
+                errorDialog.CloseButtonClick += (_, _) => errorDialog.Hide();
+                await errorDialog.ShowAsync(this);
+            }
+            else
+            {
+                await ShowQrCodeDialog(qrOutputPath);
+            }
         }
     }
 
@@ -298,6 +312,39 @@ public partial class MainWindow : Window
                 dialog.Hide();
             };
         }
+        dialog.CloseButtonClick += (_, _) => { dialog.Hide(); };
+        await dialog.ShowAsync(this);
+    }
+
+    private async Task ShowQrCodeDialog(string qrCodePath)
+    {
+        var fullPath = Path.GetFullPath(qrCodePath);
+        var qrBitmap = new Bitmap(fullPath);
+        var image = new Image
+        {
+            Source = qrBitmap,
+            Width = 300,
+            Height = 300,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        var dialog = new FAContentDialog()
+        {
+            Title = "二维码导出",
+            Content = image,
+            PrimaryButtonText = "复制",
+            CloseButtonText = "关闭"
+        };
+        dialog.PrimaryButtonClick += async (_, _) =>
+        {
+            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            if (clipboard is not null)
+            {
+                await clipboard.SetBitmapAsync(qrBitmap);
+                await clipboard.FlushAsync();
+            }
+            dialog.Hide();
+        };
         dialog.CloseButtonClick += (_, _) => { dialog.Hide(); };
         await dialog.ShowAsync(this);
     }
