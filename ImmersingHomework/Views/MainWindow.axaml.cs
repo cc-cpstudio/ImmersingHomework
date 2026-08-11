@@ -223,6 +223,9 @@ public partial class MainWindow : Window
         }
         else if (exportFormat == ExportFormat.QrCode)
         {
+            var outputPath = $"Outputs/{Date:yyyy-MM-dd}_{DateTime.Now:HH-mm-ss}.png";
+            var qrOutputPath = HomeworkQrCodeService.GenerateQrCode(homework, outputPath);
+            await ShowExportResultDialog(qrOutputPath, isImage: true);
         }
     }
 
