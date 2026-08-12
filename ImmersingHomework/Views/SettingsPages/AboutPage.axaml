@@ -18,16 +18,6 @@
                     <fa:FASettingsExpander.Footer>
                         <TextBlock x:Name="VersionText"/>
                     </fa:FASettingsExpander.Footer>
-                    <fa:FASettingsExpanderItem Content=".NET 版本">
-                        <fa:FASettingsExpanderItem.Footer>
-                            <TextBlock Text="10.0.106"/>
-                        </fa:FASettingsExpanderItem.Footer>
-                    </fa:FASettingsExpanderItem>
-                    <fa:FASettingsExpanderItem Content="Avalonia 版本">
-                        <fa:FASettingsExpanderItem.Footer>
-                            <TextBlock Text="12.0.3"/>
-                        </fa:FASettingsExpanderItem.Footer>
-                    </fa:FASettingsExpanderItem>
                 </fa:FASettingsExpander>
             </StackPanel>
         </StackPanel>
