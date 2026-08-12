@@ -1,17 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Formats.Cbor;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Formats.Cbor;
 using ImmersingHomework.Shared.Models;
 using SkiaSharp;
 using ZXing;
 using ZXing.QrCode;
 using ZXing.QrCode.Internal;
-using ZXing.Rendering;
 
-namespace ImmersingHomework.Services;
+namespace ImmersingHomework.Shared.Services;
 
 public static class HomeworkQrCodeService
 {
@@ -26,7 +22,7 @@ public static class HomeworkQrCodeService
 
     public static string? GenerateQrCode(Homework homework, string outputPath)
     {
-        byte[] payload = SerializeCompact(homework);
+        string payload = Encoding.Latin1.GetString(SerializeCompact(homework));
         var qrCodeWriter = new BarcodeWriterPixelData
         {
             Format = BarcodeFormat.QR_CODE,
@@ -35,6 +31,7 @@ public static class HomeworkQrCodeService
                 Width = 300,
                 Height = 300,
                 Margin = 4,
+                CharacterSet = "ISO-8859-1",
                 ErrorCorrection = ErrorCorrectionLevel.L
             }
         };
@@ -80,25 +77,20 @@ public static class HomeworkQrCodeService
         if (result == null)
             throw new InvalidOperationException("无法从图片中解析QR码。");
 
-        byte[]? payload = result.RawBytes;
-        if (payload == null)
-        {
-            // 回退：按 ISO-8859-1 从 Text 还原原始字节（与 ZXing 字节模式编码无损对应）
-            if (string.IsNullOrEmpty(result.Text))
-                throw new InvalidOperationException("QR码内容为空。");
-            payload = Encoding.GetEncoding("ISO-8859-1").GetBytes(result.Text);
-        }
+        if (string.IsNullOrEmpty(result.Text))
+            throw new InvalidOperationException("QR码内容为空。");
+        byte[] payload = Encoding.Latin1.GetBytes(result.Text);
         return DeserializeCompact(payload);
     }
 
     private static byte[] SerializeCompact(Homework homework)
     {
-        var writer = new CborWriter(CborConformanceMode.Standard, convertIndefiniteLengthEncodings: false, useMultipleFrames: false);
+        var writer = new CborWriter(CborConformanceMode.Strict, convertIndefiniteLengthEncodings: false, allowMultipleRootLevelValues: false);
 
         writer.WriteStartMap(2);
-        writer.WriteString(DateKey);
-        writer.WriteString(homework.Date.ToString("yyyy-MM-dd"));
-        writer.WriteString(ItemsKey);
+        writer.WriteTextString(DateKey);
+        writer.WriteTextString(homework.Date.ToString("yyyy-MM-dd"));
+        writer.WriteTextString(ItemsKey);
         writer.WriteStartArray(homework.HomeworkItems.Count);
         foreach (var item in homework.HomeworkItems)
         {
@@ -109,36 +101,36 @@ public static class HomeworkQrCodeService
 
             writer.WriteStartMap(keyCount);
 
-            writer.WriteString(IdKey);
-            writer.WriteBytes(item.Id.ToByteArray());
+            writer.WriteTextString(IdKey);
+            writer.WriteByteString(item.Id.ToByteArray());
 
-            writer.WriteString(SubjectKey);
-            writer.WriteString(item.Subject);
+            writer.WriteTextString(SubjectKey);
+            writer.WriteTextString(item.Subject);
 
-            writer.WriteString(ContentKey);
-            writer.WriteString(item.Content);
+            writer.WriteTextString(ContentKey);
+            writer.WriteTextString(item.Content);
 
             if (item.Tags is { Count: > 0 })
             {
-                writer.WriteString(TagsKey);
+                writer.WriteTextString(TagsKey);
                 writer.WriteStartArray(item.Tags.Count);
                 foreach (var tag in item.Tags)
-                    writer.WriteString(tag.Name);
+                    writer.WriteTextString(tag.Name);
                 writer.WriteEndArray();
             }
 
             if (item.TemplateName is not null)
             {
-                writer.WriteString(TemplateNameKey);
-                writer.WriteString(item.TemplateName);
+                writer.WriteTextString(TemplateNameKey);
+                writer.WriteTextString(item.TemplateName);
             }
 
             if (item.TemplateParameters is { Count: > 0 })
             {
-                writer.WriteString(TemplateParamsKey);
+                writer.WriteTextString(TemplateParamsKey);
                 writer.WriteStartArray(item.TemplateParameters.Count);
                 foreach (var param in item.TemplateParameters)
-                    writer.WriteString(param);
+                    writer.WriteTextString(param);
                 writer.WriteEndArray();
             }
 
@@ -152,7 +144,7 @@ public static class HomeworkQrCodeService
 
     private static Homework DeserializeCompact(byte[] payload)
     {
-        var reader = new CborReader(payload, CborConformanceMode.Standard);
+        var reader = new CborReader(payload, CborConformanceMode.Strict);
 
         reader.ReadStartMap();
         ReadExpectedKey(reader, DateKey);
@@ -163,7 +155,6 @@ public static class HomeworkQrCodeService
         int? arrayCount = reader.ReadStartArray();
         for (int i = 0; arrayCount.HasValue ? i < arrayCount.Value : reader.PeekState() != CborReaderState.EndArray; i++)
         {
-            reader.ReadStartMap();
             string subject = string.Empty;
             string content = string.Empty;
             Guid id = Guid.Empty;
@@ -187,7 +178,7 @@ public static class HomeworkQrCodeService
                         content = reader.ReadTextString();
                         break;
                     case TagsKey:
-                        tags = ReadStringArray(reader);
+                        tags = ReadStringArray(reader).Select(s => new TagModel { Name = s }).ToList();
                         break;
                     case TemplateNameKey:
                         templateName = reader.ReadTextString();
