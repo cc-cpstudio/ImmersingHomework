@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Formats.Cbor;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.Json;
 using ImmersingHomework.Shared.Models;
 using SkiaSharp;
 using ZXing;
@@ -15,9 +15,18 @@ namespace ImmersingHomework.Services;
 
 public static class HomeworkQrCodeService
 {
+    private const string DateKey = "d";
+    private const string ItemsKey = "i";
+    private const string IdKey = "id";
+    private const string SubjectKey = "s";
+    private const string ContentKey = "c";
+    private const string TagsKey = "t";
+    private const string TemplateNameKey = "n";
+    private const string TemplateParamsKey = "p";
+
     public static string? GenerateQrCode(Homework homework, string outputPath)
     {
-        string json = SerializeCompact(homework);
+        byte[] payload = SerializeCompact(homework);
         var qrCodeWriter = new BarcodeWriterPixelData
         {
             Format = BarcodeFormat.QR_CODE,
@@ -33,7 +42,7 @@ public static class HomeworkQrCodeService
         ZXing.Rendering.PixelData pixelData;
         try
         {
-            pixelData = qrCodeWriter.Write(json);
+            pixelData = qrCodeWriter.Write(payload);
         }
         catch (WriterException)
         {
@@ -70,78 +79,158 @@ public static class HomeworkQrCodeService
         var result = reader.Decode(bmp.Bytes, bmp.Width, bmp.Height, RGBLuminanceSource.BitmapFormat.BGRA32);
         if (result == null)
             throw new InvalidOperationException("无法从图片中解析QR码。");
-        return DeserializeCompact(result.Text);
+
+        byte[]? payload = result.RawBytes;
+        if (payload == null)
+        {
+            // 回退：按 ISO-8859-1 从 Text 还原原始字节（与 ZXing 字节模式编码无损对应）
+            if (string.IsNullOrEmpty(result.Text))
+                throw new InvalidOperationException("QR码内容为空。");
+            payload = Encoding.GetEncoding("ISO-8859-1").GetBytes(result.Text);
+        }
+        return DeserializeCompact(payload);
     }
 
-    private static string SerializeCompact(Homework homework)
+    private static byte[] SerializeCompact(Homework homework)
     {
-        using var stream = new MemoryStream();
-        using var writer = new Utf8JsonWriter(stream);
-        writer.WriteStartObject();
-        writer.WriteString("d", homework.Date.ToString("yyyy-MM-dd"));
-        writer.WriteStartArray("i");
+        var writer = new CborWriter(CborConformanceMode.Standard, convertIndefiniteLengthEncodings: false, useMultipleFrames: false);
+
+        writer.WriteStartMap(2);
+        writer.WriteString(DateKey);
+        writer.WriteString(homework.Date.ToString("yyyy-MM-dd"));
+        writer.WriteString(ItemsKey);
+        writer.WriteStartArray(homework.HomeworkItems.Count);
         foreach (var item in homework.HomeworkItems)
         {
-            writer.WriteStartObject();
-            writer.WriteString("id", item.Id);
-            writer.WriteString("s", item.Subject);
-            writer.WriteString("c", item.Content);
+            int keyCount = 3; // id, s, c
+            if (item.Tags is { Count: > 0 }) keyCount++;
+            if (item.TemplateName is not null) keyCount++;
+            if (item.TemplateParameters is { Count: > 0 }) keyCount++;
+
+            writer.WriteStartMap(keyCount);
+
+            writer.WriteString(IdKey);
+            writer.WriteBytes(item.Id.ToByteArray());
+
+            writer.WriteString(SubjectKey);
+            writer.WriteString(item.Subject);
+
+            writer.WriteString(ContentKey);
+            writer.WriteString(item.Content);
+
             if (item.Tags is { Count: > 0 })
             {
-                writer.WriteStartArray("t");
+                writer.WriteString(TagsKey);
+                writer.WriteStartArray(item.Tags.Count);
                 foreach (var tag in item.Tags)
-                    writer.WriteStringValue(tag.Name);
+                    writer.WriteString(tag.Name);
                 writer.WriteEndArray();
             }
+
             if (item.TemplateName is not null)
-                writer.WriteString("n", item.TemplateName);
+            {
+                writer.WriteString(TemplateNameKey);
+                writer.WriteString(item.TemplateName);
+            }
+
             if (item.TemplateParameters is { Count: > 0 })
             {
-                writer.WriteStartArray("p");
+                writer.WriteString(TemplateParamsKey);
+                writer.WriteStartArray(item.TemplateParameters.Count);
                 foreach (var param in item.TemplateParameters)
-                    writer.WriteStringValue(param);
+                    writer.WriteString(param);
                 writer.WriteEndArray();
             }
-            writer.WriteEndObject();
+
+            writer.WriteEndMap();
         }
         writer.WriteEndArray();
-        writer.WriteEndObject();
-        writer.Flush();
-        return Encoding.UTF8.GetString(stream.ToArray());
+        writer.WriteEndMap();
+
+        return writer.Encode();
     }
 
-    private static Homework DeserializeCompact(string json)
+    private static Homework DeserializeCompact(byte[] payload)
     {
-        var doc = JsonDocument.Parse(json);
-        var root = doc.RootElement;
-        var date = DateOnly.Parse(root.GetProperty("d").GetString()!);
+        var reader = new CborReader(payload, CborConformanceMode.Standard);
+
+        reader.ReadStartMap();
+        ReadExpectedKey(reader, DateKey);
+        var date = DateOnly.Parse(reader.ReadTextString());
+        ReadExpectedKey(reader, ItemsKey);
+
         var items = new List<HomeworkItem>();
-        foreach (var elem in root.GetProperty("i").EnumerateArray())
+        int? arrayCount = reader.ReadStartArray();
+        for (int i = 0; arrayCount.HasValue ? i < arrayCount.Value : reader.PeekState() != CborReaderState.EndArray; i++)
         {
+            reader.ReadStartMap();
+            string subject = string.Empty;
+            string content = string.Empty;
+            Guid id = Guid.Empty;
             var tags = new List<TagModel>();
-            if (elem.TryGetProperty("t", out var t))
-            {
-                foreach (var tag in t.EnumerateArray())
-                    tags.Add(new TagModel { Name = tag.GetString()! });
-            }
+            string? templateName = null;
             List<string>? templateParams = null;
-            if (elem.TryGetProperty("p", out var p))
+
+            int? mapCount = reader.ReadStartMap();
+            for (int k = 0; mapCount.HasValue ? k < mapCount.Value : reader.PeekState() != CborReaderState.EndMap; k++)
             {
-                templateParams = new List<string>();
-                foreach (var param in p.EnumerateArray())
-                    templateParams.Add(param.GetString()!);
+                string key = reader.ReadTextString();
+                switch (key)
+                {
+                    case IdKey:
+                        id = new Guid(reader.ReadByteString());
+                        break;
+                    case SubjectKey:
+                        subject = reader.ReadTextString();
+                        break;
+                    case ContentKey:
+                        content = reader.ReadTextString();
+                        break;
+                    case TagsKey:
+                        tags = ReadStringArray(reader);
+                        break;
+                    case TemplateNameKey:
+                        templateName = reader.ReadTextString();
+                        break;
+                    case TemplateParamsKey:
+                        templateParams = ReadStringArray(reader);
+                        break;
+                    default:
+                        reader.SkipValue();
+                        break;
+                }
             }
-            var item = new HomeworkItem(
-                elem.GetProperty("s").GetString()!,
-                elem.GetProperty("c").GetString()!,
-                tags)
+            reader.ReadEndMap();
+
+            items.Add(new HomeworkItem(subject, content, tags)
             {
-                Id = elem.GetProperty("id").GetGuid(),
-                TemplateName = elem.TryGetProperty("n", out var n) ? n.GetString() : null,
+                Id = id,
+                TemplateName = templateName,
                 TemplateParameters = templateParams
-            };
-            items.Add(item);
+            });
         }
+        reader.ReadEndArray();
+        reader.ReadEndMap();
+
         return new Homework(date, items);
+    }
+
+    private static void ReadExpectedKey(CborReader reader, string expected)
+    {
+        string key = reader.ReadTextString();
+        if (key != expected)
+            throw new InvalidOperationException($"期望键 '{expected}'，实际 '{key}'。");
+    }
+
+    private static List<string> ReadStringArray(CborReader reader)
+    {
+        var list = new List<string>();
+        int? count = reader.ReadStartArray();
+        for (int i = 0; count.HasValue ? i < count.Value : reader.PeekState() != CborReaderState.EndArray; i++)
+        {
+            list.Add(reader.ReadTextString());
+        }
+        reader.ReadEndArray();
+        return list;
     }
 }
