@@ -143,7 +143,8 @@ public partial class HomeworkContentInput : UserControl
             {
                 Text = _templateParameters.Count > i ? _templateParameters[i] : "",
                 PlaceholderText = $"请输入参数 {i + 1}",
-                Width = 300
+                Width = 300,
+                HorizontalAlignment = HorizontalAlignment.Stretch
             };
             textBox.TextChanged += (_, _) =>
             {
