@@ -9,6 +9,7 @@ using Avalonia.Controls;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
@@ -26,6 +27,10 @@ public partial class MainWindow : Window
 {
     private readonly ILogger _logger = Log.ForContext<MainWindow>();
     private Timer _hitokotoTimer;
+    private bool _isFrozen;
+    private string? _lastHitokotoText;
+    private const string FrozenHintText = "作业已冻结，请解除冻结后编辑作业";
+    private static readonly IBrush FrozenBrush = new SolidColorBrush(Avalonia.Media.Color.FromRgb(211, 211, 211));
     
     private event Action<DateOnly> DateChanged;
     
@@ -73,6 +78,7 @@ public partial class MainWindow : Window
         if (AppSettings.Instance.HitokotoDisplayMode.Value is not HitokotoDisplayMode.Hide)
             SetupHitokotoTimer();
 
+        HomeworkPanel.FrozenChanged += ApplyFrozenState;
         HomeworkPanel.Refresh();
         _logger.Information("MainWindow 初始化完成");
     }
@@ -91,7 +97,7 @@ public partial class MainWindow : Window
                 if (hitokoto is null)
                 {
                     _logger.Debug("获取到的 Hitokoto 为空，使用默认文本");
-                    Hitokoto.Text = AppSettings.Instance.HitokotoDisplayMode.Value switch
+                    _lastHitokotoText = AppSettings.Instance.HitokotoDisplayMode.Value switch
                     {
                         HitokotoDisplayMode.Hide => "",
                         HitokotoDisplayMode.Content => "咕咕嘎嘎！",
@@ -101,12 +107,17 @@ public partial class MainWindow : Window
                 else
                 {
                     _logger.Debug("更新 Hitokoto 显示: {Sentence} —— {Author}", hitokoto.Value.Sentence, hitokoto.Value.Author);
-                    Hitokoto.Text = AppSettings.Instance.HitokotoDisplayMode.Value switch
+                    _lastHitokotoText = AppSettings.Instance.HitokotoDisplayMode.Value switch
                     {
                         HitokotoDisplayMode.Hide => "",
                         HitokotoDisplayMode.Content => hitokoto.Value.Sentence,
                         HitokotoDisplayMode.ContentAndAuthor => $"{hitokoto.Value.Sentence} —— {hitokoto.Value.Author}"
                     };
+                }
+
+                if (!_isFrozen)
+                {
+                    Hitokoto.Text = _lastHitokotoText;
                 }
             });
         };
@@ -353,7 +364,20 @@ public partial class MainWindow : Window
 
     private void FreezeButton_OnClick(object? sender, RoutedEventArgs e)
     {
-        throw new NotImplementedException();
+        var homework = _storageService.Load(Date) ?? new Homework(Date, []);
+        homework.Frozen = !homework.Frozen;
+        _storageService.Save(homework);
+        _logger.Information("作业冻结状态切换为: {Frozen}", homework.Frozen);
+        HomeworkPanel.IsFrozen = homework.Frozen;
+    }
+
+    private void ApplyFrozenState(bool frozen)
+    {
+        _isFrozen = frozen;
+        AddHomeworkButton.IsEnabled = !frozen;
+        RestoreButton.IsEnabled = !frozen;
+        FreezeButton.Background = frozen ? FrozenBrush : Brushes.Transparent;
+        Hitokoto.Text = frozen ? FrozenHintText : (_lastHitokotoText ?? "");
     }
 
     private void RestoreButton_OnClick(object? sender, RoutedEventArgs e)

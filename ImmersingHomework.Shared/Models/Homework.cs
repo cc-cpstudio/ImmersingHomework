@@ -9,6 +9,7 @@ public class Homework
 {
     private readonly ILogger _logger = Log.ForContext<Homework>();
     public DateOnly Date { get; init; }
+    public bool Frozen { get; set; } = false;
     public List<HomeworkItem> HomeworkItems { get; set; }
 
     public Homework(DateOnly date, List<HomeworkItem> homeworkItems)

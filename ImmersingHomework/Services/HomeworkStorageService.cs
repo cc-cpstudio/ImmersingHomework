@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using ImmersingHomework.Shared.Models;
 using Serilog;
@@ -58,6 +59,31 @@ public class HomeworkStorageService
         return File.Exists(GetFilePath(date));
     }
 
+    // 相比已保存的档案，仅 Frozen 属性发生变化时不视为内容变更
+    private bool HasOnlyFrozenChanged(Homework homework)
+    {
+        var filePath = GetFilePath(homework.Date);
+        if (!File.Exists(filePath))
+            return false;
+
+        try
+        {
+            var existing = JsonNode.Parse(File.ReadAllText(filePath))?.AsObject();
+            var updated = JsonNode.Parse(JsonSerializer.Serialize(homework))?.AsObject();
+            if (existing is null || updated is null)
+                return false;
+
+            existing.Remove("Frozen");
+            updated.Remove("Frozen");
+            return JsonNode.DeepEquals(existing, updated);
+        }
+        catch (Exception ex)
+        {
+            _logger.Warning(ex, "比较作业内容时出错，日期: {Date}", homework.Date);
+            return false;
+        }
+    }
+
     public void Save(Homework homework)
     {
         _logger.Debug("正在保存作业，日期: {Date}", homework.Date);
@@ -67,7 +93,8 @@ public class HomeworkStorageService
             _logger.Information("创建作业数据目录: {DataDir}", dataDir);
             Directory.CreateDirectory(dataDir);
         }
-        SaveSnapshot(homework.Date);
+        if (!HasOnlyFrozenChanged(homework))
+            SaveSnapshot(homework.Date);
         string json = JsonSerializer.Serialize(homework, new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText(GetFilePath(homework.Date), json);
         _logger.Debug("作业已保存，日期: {Date}", homework.Date);
@@ -82,7 +109,8 @@ public class HomeworkStorageService
             _logger.Information("创建作业数据目录: {DataDir}", dataDir);
             Directory.CreateDirectory(dataDir);
         }
-        SaveSnapshot(homework.Date);
+        if (!HasOnlyFrozenChanged(homework))
+            SaveSnapshot(homework.Date);
         string json = JsonSerializer.Serialize(homework, new JsonSerializerOptions { WriteIndented = true });
         await File.WriteAllTextAsync(GetFilePath(homework.Date), json);
         _logger.Debug("作业已异步保存，日期: {Date}", homework.Date);

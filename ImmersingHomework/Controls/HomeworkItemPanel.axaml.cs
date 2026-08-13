@@ -25,6 +25,15 @@ public partial class HomeworkItemPanel : UserControl
         set => SetValue(HomeworkItemProperty, value);
     }
 
+    public static readonly StyledProperty<bool> IsFrozenProperty =
+        AvaloniaProperty.Register<HomeworkItemPanel, bool>(nameof(IsFrozen), false);
+
+    public bool IsFrozen
+    {
+        get => GetValue(IsFrozenProperty);
+        set => SetValue(IsFrozenProperty, value);
+    }
+
     public event Action<HomeworkItem>? EditRequested;
 
     public HomeworkItemPanel()
@@ -35,6 +44,10 @@ public partial class HomeworkItemPanel : UserControl
         {
             _logger.Debug("作业项属性变化");
             panel.UpdatePanel();
+        });
+        IsFrozenProperty.Changed.AddClassHandler<HomeworkItemPanel>((panel, e) =>
+        {
+            panel.MoreButton.IsEnabled = !panel.IsFrozen;
         });
     }
 

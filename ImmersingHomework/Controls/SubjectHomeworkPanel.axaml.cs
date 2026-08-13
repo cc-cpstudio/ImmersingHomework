@@ -33,6 +33,15 @@ public partial class SubjectHomeworkPanel : UserControl
         set => SetValue(HomeworkItemsProperty, value);
     }
 
+    public static readonly StyledProperty<bool> IsFrozenProperty =
+        AvaloniaProperty.Register<SubjectHomeworkPanel, bool>(nameof(IsFrozen), false);
+
+    public bool IsFrozen
+    {
+        get => GetValue(IsFrozenProperty);
+        set => SetValue(IsFrozenProperty, value);
+    }
+
     public event Action<HomeworkItem>? EditRequested;
 
     public SubjectHomeworkPanel()
@@ -51,6 +60,10 @@ public partial class SubjectHomeworkPanel : UserControl
             _logger.Debug("作业项列表变化");
             panel.Refresh();
         });
+        IsFrozenProperty.Changed.AddClassHandler<SubjectHomeworkPanel>((panel, e) =>
+        {
+            panel.ApplyFrozenState();
+        });
     }
 
     public void SetData(string subject, List<HomeworkItem> homeworkItems)
@@ -60,6 +73,17 @@ public partial class SubjectHomeworkPanel : UserControl
         HomeworkItems = homeworkItems;
         _suppressRefresh = false;
         Refresh();
+    }
+
+    private void ApplyFrozenState()
+    {
+        foreach (var child in HomeworkItemPanels.Children)
+        {
+            if (child is HomeworkItemPanel itemPanel)
+            {
+                itemPanel.IsFrozen = IsFrozen;
+            }
+        }
     }
 
     public void Refresh()
@@ -80,7 +104,8 @@ public partial class SubjectHomeworkPanel : UserControl
             {
                 var itemPanel = new HomeworkItemPanel
                 {
-                    HomeworkItem = item
+                    HomeworkItem = item,
+                    IsFrozen = IsFrozen
                 };
                 itemPanel.EditRequested += (homeworkItem) => EditRequested?.Invoke(homeworkItem);
                 HomeworkItemPanels.Children.Add(itemPanel);

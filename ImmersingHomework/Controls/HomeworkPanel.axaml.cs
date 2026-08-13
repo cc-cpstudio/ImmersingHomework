@@ -21,6 +21,17 @@ public partial class  HomeworkPanel : UserControl
 
     public event Action<DateOnly>? DateChanged;
 
+    public static readonly StyledProperty<bool> IsFrozenProperty =
+        AvaloniaProperty.Register<HomeworkPanel, bool>(nameof(IsFrozen), false);
+
+    public event Action<bool>? FrozenChanged;
+
+    public bool IsFrozen
+    {
+        get => GetValue(IsFrozenProperty);
+        set => SetValue(IsFrozenProperty, value);
+    }
+
     public DateOnly Date
     {
         get => GetValue(DateProperty);
@@ -40,6 +51,11 @@ public partial class  HomeworkPanel : UserControl
             panel.DateChanged?.Invoke(panel.Date);
             _ = panel.RefreshAsync(panel.Date);
         });
+        IsFrozenProperty.Changed.AddClassHandler<HomeworkPanel>((panel, e) =>
+        {
+            panel.ApplyFrozenStateToSubjects();
+            panel.FrozenChanged?.Invoke(panel.IsFrozen);
+        });
         Date = DateOnly.FromDateTime(DateTime.Now);
         _logger.Information("HomeworkPanel 初始化完成");
     }
@@ -58,6 +74,7 @@ public partial class  HomeworkPanel : UserControl
         SubjectHomeworkPanels.IsVisible = false;
         SubjectHomeworkPanels.Children.Clear();
         var homework = await _storageService.LoadAsync(date);
+        IsFrozen = homework?.Frozen ?? false;
 
         var hasHomework = false;
         if (homework != null)
@@ -99,6 +116,7 @@ public partial class  HomeworkPanel : UserControl
                             var subjectPanel = new SubjectHomeworkPanel();
                             subjectPanel.SetData(subject, subjectItems);
                             subjectPanel.EditRequested += OnEditRequested;
+                            subjectPanel.IsFrozen = IsFrozen;
                             SubjectHomeworkPanels.Children.Add(subjectPanel);
                             hasHomework = true;
                         }
@@ -119,6 +137,17 @@ public partial class  HomeworkPanel : UserControl
         sw.Stop();
         _logger.Debug("Refresh 方法执行耗时: {Elapsed}ms", sw.Elapsed.TotalMilliseconds);
 #endif
+    }
+
+    private void ApplyFrozenStateToSubjects()
+    {
+        foreach (var child in SubjectHomeworkPanels.Children)
+        {
+            if (child is SubjectHomeworkPanel subjectPanel)
+            {
+                subjectPanel.IsFrozen = IsFrozen;
+            }
+        }
     }
 
     private async void OnEditRequested(HomeworkItem item)
