@@ -13,6 +13,7 @@
         <entry key="ImmersingHomework/Controls/LogStorageManageDialogContent.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
         <entry key="ImmersingHomework/Controls/OutputStorageManageDialogContent.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
         <entry key="ImmersingHomework/Controls/PickableTag.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
+        <entry key="ImmersingHomework/Controls/SnapshotStorageManageDialogContent.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
         <entry key="ImmersingHomework/Controls/StorageManagementDialogContent.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
         <entry key="ImmersingHomework/Controls/SubjectHomeworkPanel.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />
         <entry key="ImmersingHomework/Controls/SubjectPicker.axaml" value="ImmersingHomework/ImmersingHomework.csproj" />

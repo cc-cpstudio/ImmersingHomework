@@ -17,6 +17,7 @@ public partial class StorageSettingsPage : UserControl
     private readonly HomeworkStorageService _homeworkStorageService = new();
     private readonly OutputStorageService _outputStorageService = new();
     private readonly LogStorageService _logStorageService = new();
+    private readonly SnapshotStorageService _snapshotStorageService = new();
 
     public StorageSettingsPage()
     {
@@ -30,14 +31,16 @@ public partial class StorageSettingsPage : UserControl
         var outputDir = Path.Combine(Directory.GetCurrentDirectory(), "Outputs");
         var logDir = Path.Combine(Directory.GetCurrentDirectory(), "Logs");
 
-        var homeworkSize = GetDirectorySize(homeworkDir);
+        var snapshotSize = _snapshotStorageService.GetStorageUsage();
+        var homeworkSize = GetDirectorySize(homeworkDir) - snapshotSize;
         var outputSize = GetDirectorySize(outputDir);
         var logSize = GetDirectorySize(logDir);
-        var totalSize = homeworkSize + outputSize + logSize;
+        var totalSize = homeworkSize + outputSize + logSize + snapshotSize;
 
         HomeworkOccupationTextBlock.Text = FormatSize(homeworkSize);
         OutputOccupationTextBlock.Text = FormatSize(outputSize);
         LogOccupationTextBlock.Text = FormatSize(logSize);
+        SnapshotOccupationTextBlock.Text = FormatSize(snapshotSize);
         TotalOccupationTextBlock.Text = FormatSize(totalSize);
     }
 
@@ -105,6 +108,29 @@ public partial class StorageSettingsPage : UserControl
 
             var deletedCount = _logStorageService.DeleteBefore(control.SelectedDate.Value);
             _logger.Information("删除日志文件完成，共删除 {Count} 个文件", deletedCount);
+            RefreshOccupancyStats();
+        };
+        _ = dialog.ShowAsync(TopLevel.GetTopLevel(this) as Window ?? throw new InvalidOperationException());
+    }
+
+    private void SnapshotManageButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        var control = new SnapshotStorageManageDialogContent();
+        var dialog = new FAContentDialog()
+        {
+            Title = "管理作业快照",
+            Content = control,
+            PrimaryButtonText = "删除",
+            CloseButtonText = "取消"
+        };
+        dialog.PrimaryButtonClick += (s, args) => control.OnPrimaryButtonClick(args);
+        dialog.PrimaryButtonClick += (s, args) =>
+        {
+            if (control.SelectedDate is null)
+                return;
+
+            var deletedCount = _snapshotStorageService.ClearBefore(control.SelectedDate.Value);
+            _logger.Information("删除作业快照完成，共删除 {Count} 个文件", deletedCount);
             RefreshOccupancyStats();
         };
         _ = dialog.ShowAsync(TopLevel.GetTopLevel(this) as Window ?? throw new InvalidOperationException());

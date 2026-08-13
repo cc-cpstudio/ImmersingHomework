@@ -45,6 +45,9 @@
         <DependentUpon>FloatingButtonWindow.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
+      <Compile Update="Controls\SnapshotStorageManageDialogContent.axaml.cs">
+        <DependentUpon>SnapshotStorageManageDialogContent.axaml</DependentUpon>
+      </Compile>
     </ItemGroup>
 
     <ItemGroup>

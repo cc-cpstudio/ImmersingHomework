@@ -36,6 +36,14 @@
                     </StackPanel>
                 </fa:FASettingsExpanderItem.Footer>
             </fa:FASettingsExpanderItem>
+            <fa:FASettingsExpanderItem Content="快照占用" Description="这些文件将用于存储作业修改前的快照，请放心删除">
+                <fa:FASettingsExpanderItem.Footer>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock x:Name="SnapshotOccupationTextBlock"/>
+                        <Button x:Name="SnapshotManageButton" Click="SnapshotManageButton_OnClick">管理</Button>
+                    </StackPanel>
+                </fa:FASettingsExpanderItem.Footer>
+            </fa:FASettingsExpanderItem>
         </fa:FASettingsExpander>
     </StackPanel>
 </UserControl>
