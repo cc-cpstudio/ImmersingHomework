@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Timers;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -14,6 +15,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using ImmersingHomework.Controls;
+using ImmersingHomework.Enums;
 using ImmersingHomework.Shared.Enums;
 using ImmersingHomework.Models;
 using ImmersingHomework.Shared.Models;
@@ -428,24 +430,117 @@ public partial class MainWindow : Window
         };
 
         var result = await dialog.ShowAsync(this);
+        if (result is not (FAContentDialogResult.Primary or FAContentDialogResult.Secondary)
+            || selectedSnapshotPath is null)
+        {
+            _logger.Debug("还原对话框已关闭，结果: {Result}，选中快照: {Snapshot}", result, selectedSnapshotPath);
+            return;
+        }
 
-        if (result == FAContentDialogResult.Primary && selectedSnapshotPath is not null)
+        var snapshotHomework = _storageService.LoadFromFile(selectedSnapshotPath);
+        if (snapshotHomework is null)
+        {
+            _logger.Warning("加载快照失败: {Snapshot}", selectedSnapshotPath);
+            return;
+        }
+
+        var currentHomework = _storageService.Load(Date) ?? new Homework(Date, []);
+
+        if (result == FAContentDialogResult.Primary)
         {
             _logger.Information("用户选择替换作业内容，快照: {Snapshot}", selectedSnapshotPath);
-            var snapshotHomework = _storageService.LoadFromFile(selectedSnapshotPath);
-            if (snapshotHomework is null)
-            {
-                _logger.Warning("加载快照失败，无法替换: {Snapshot}", selectedSnapshotPath);
-                return;
-            }
-
-            var currentHomework = _storageService.Load(Date) ?? new Homework(Date, []);
             currentHomework.HomeworkItems = snapshotHomework.HomeworkItems;
             _storageService.Save(currentHomework);
             HomeworkPanel.Refresh();
             _logger.Information("作业内容已替换为快照内容");
         }
-        // TODO: 实现合并逻辑
-        _logger.Debug("还原对话框已关闭，结果: {Result}，选中快照: {Snapshot}", result, selectedSnapshotPath);
+        else
+        {
+            _logger.Information("用户选择合并作业，快照: {Snapshot}", selectedSnapshotPath);
+            await MergeHomeworkWithSnapshotAsync(snapshotHomework, currentHomework);
+        }
+    }
+
+    private async Task MergeHomeworkWithSnapshotAsync(Homework snapshotHomework, Homework currentHomework)
+    {
+        var conflictIds = HomeworkMergeService.PreprocessHomeworksToMerge(snapshotHomework, currentHomework);
+
+        if (conflictIds.Count == 0)
+        {
+            var merged = HomeworkMergeService.MergeHomework(snapshotHomework, currentHomework, []);
+            _storageService.Save(merged);
+            HomeworkPanel.Refresh();
+            _logger.Information("无冲突，作业已合并");
+            return;
+        }
+
+        var viewer = new ScrollViewer { HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, MaxHeight = 800};
+        var panel = new StackPanel { Spacing = 8, Margin = new Avalonia.Thickness(0, 8, 0, 0) };
+        viewer.Content = panel;
+        var options = new Dictionary<Guid, HomeworkMergeOption>();
+
+        foreach (var guid in conflictIds)
+        {
+            var snapshotItem = snapshotHomework.GetHomeworkItem(guid);
+            var currentItem = currentHomework.GetHomeworkItem(guid);
+
+            var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12 };
+            row.Children.Add(new TextBlock
+            {
+                Text = snapshotItem is null ? "无" : $"{snapshotItem.Subject}：{snapshotItem.Content}",
+                VerticalAlignment = VerticalAlignment.Center,
+                MinWidth = 180,
+                TextWrapping = TextWrapping.Wrap
+            });
+
+            var useOldRadio = new RadioButton { Content = "以快照为准", GroupName = $"Conflict-{guid}" };
+            var useNewRadio = new RadioButton { Content = "以当前作业为准", GroupName = $"Conflict-{guid}" };
+            useOldRadio.IsCheckedChanged += (s, _) =>
+            {
+                if (s is RadioButton { IsChecked: true })
+                    options[guid] = HomeworkMergeOption.UseOld;
+            };
+            useNewRadio.IsCheckedChanged += (s, _) =>
+            {
+                if (s is RadioButton { IsChecked: true })
+                    options[guid] = HomeworkMergeOption.UseNew;
+            };
+            if (currentItem is null)
+                useOldRadio.IsChecked = true;
+            else
+                useNewRadio.IsChecked = true;
+            row.Children.Add(useOldRadio);
+            row.Children.Add(useNewRadio);
+
+            row.Children.Add(new TextBlock
+            {
+                Text = currentItem is null ? "无" : $"{currentItem.Subject}：{currentItem.Content}",
+                VerticalAlignment = VerticalAlignment.Center,
+                MinWidth = 180,
+                TextWrapping = TextWrapping.Wrap
+            });
+
+            panel.Children.Add(row);
+        }
+
+        var dialog = new FAContentDialog
+        {
+            Title = "解决冲突",
+            Content = viewer,
+            PrimaryButtonText = "合并",
+            CloseButtonText = "取消"
+        };
+
+        var result = await dialog.ShowAsync(this);
+        if (result != FAContentDialogResult.Primary)
+        {
+            _logger.Information("用户取消合并");
+            return;
+        }
+
+        var mergedHomework = HomeworkMergeService.MergeHomework(snapshotHomework, currentHomework, options);
+        _storageService.Save(mergedHomework);
+        HomeworkPanel.Refresh();
+        _logger.Information("作业合并完成");
     }
 }

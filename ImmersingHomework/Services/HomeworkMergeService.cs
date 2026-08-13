@@ -12,7 +12,7 @@ public class HomeworkMergeService
     {
         var oldIds = oldHomework.HomeworkItems.Select(item => item.Id);
         var newIds = newHomework.HomeworkItems.Select(item => item.Id);
-        return oldIds.Intersect(newIds).ToList();
+        return oldIds.Union(newIds).ToList();
     }
     
     public static Homework MergeHomework(Homework oldHomework, Homework newHomework, Dictionary<Guid, HomeworkMergeOption> options)
