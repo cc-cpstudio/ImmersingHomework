@@ -380,8 +380,72 @@ public partial class MainWindow : Window
         Hitokoto.Text = frozen ? FrozenHintText : (_lastHitokotoText ?? "");
     }
 
-    private void RestoreButton_OnClick(object? sender, RoutedEventArgs e)
+    private async void RestoreButton_OnClick(object? sender, RoutedEventArgs e)
     {
-        throw new NotImplementedException();
+        _logger.Information("用户点击了还原按钮");
+        var snapshotStorageService = new SnapshotStorageService();
+        var snapshots = snapshotStorageService.GetSnapshots(Date);
+
+        if (snapshots.Count == 0)
+        {
+            var emptyDialog = new FAContentDialog()
+            {
+                Title = "还原作业",
+                Content = "暂无保存的快照。",
+                CloseButtonText = "关闭"
+            };
+            emptyDialog.CloseButtonClick += (_, _) => emptyDialog.Hide();
+            await emptyDialog.ShowAsync(this);
+            return;
+        }
+
+        var panel = new StackPanel { Spacing = 8, Margin = new Avalonia.Thickness(0, 8, 0, 0) };
+        panel.Children.Add(new TextBlock { Text = "请选择要还原的快照：" });
+
+        string? selectedSnapshotPath = null;
+        foreach (var snapshot in snapshots)
+        {
+            var radio = new RadioButton
+            {
+                Content = snapshot.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
+                GroupName = "SnapshotSelection"
+            };
+            radio.IsCheckedChanged += (s, _) =>
+            {
+                if (s is RadioButton { IsChecked: true })
+                    selectedSnapshotPath = snapshot.FilePath;
+            };
+            panel.Children.Add(radio);
+        }
+
+        var dialog = new FAContentDialog()
+        {
+            Title = "还原作业",
+            Content = panel,
+            PrimaryButtonText = "替换",
+            SecondaryButtonText = "合并",
+            CloseButtonText = "取消"
+        };
+
+        var result = await dialog.ShowAsync(this);
+
+        if (result == FAContentDialogResult.Primary && selectedSnapshotPath is not null)
+        {
+            _logger.Information("用户选择替换作业内容，快照: {Snapshot}", selectedSnapshotPath);
+            var snapshotHomework = _storageService.LoadFromFile(selectedSnapshotPath);
+            if (snapshotHomework is null)
+            {
+                _logger.Warning("加载快照失败，无法替换: {Snapshot}", selectedSnapshotPath);
+                return;
+            }
+
+            var currentHomework = _storageService.Load(Date) ?? new Homework(Date, []);
+            currentHomework.HomeworkItems = snapshotHomework.HomeworkItems;
+            _storageService.Save(currentHomework);
+            HomeworkPanel.Refresh();
+            _logger.Information("作业内容已替换为快照内容");
+        }
+        // TODO: 实现合并逻辑
+        _logger.Debug("还原对话框已关闭，结果: {Result}，选中快照: {Snapshot}", result, selectedSnapshotPath);
     }
 }

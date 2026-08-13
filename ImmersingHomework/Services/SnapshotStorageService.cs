@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Serilog;
 
 namespace ImmersingHomework.Services;
+
+public record SnapshotInfo(string FilePath, DateTime CreatedAt);
 
 public class SnapshotStorageService
 {
@@ -11,6 +14,25 @@ public class SnapshotStorageService
     private string GetDataDir()
     {
         return Path.Combine(Directory.GetCurrentDirectory(), "Data", "Homeworks");
+    }
+
+    public List<SnapshotInfo> GetSnapshots(DateOnly date)
+    {
+        var dataDir = GetDataDir();
+        if (!Directory.Exists(dataDir))
+            return [];
+
+        var prefix = $"{date.Year:D4}-{date.Month:D2}-{date.Day:D2}_snapshot-";
+        var snapshots = new List<SnapshotInfo>();
+        foreach (var file in Directory.GetFiles(dataDir, $"{prefix}*.json"))
+        {
+            var createdAt = File.GetCreationTime(file);
+            snapshots.Add(new SnapshotInfo(file, createdAt));
+        }
+
+        snapshots.Sort((a, b) => a.CreatedAt.CompareTo(b.CreatedAt));
+        _logger.Debug("获取到 {Count} 个快照，日期: {Date}", snapshots.Count, date);
+        return snapshots;
     }
 
     private static bool IsSnapshotFile(string fileName)

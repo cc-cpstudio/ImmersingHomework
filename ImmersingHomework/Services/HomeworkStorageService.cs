@@ -164,6 +164,29 @@ public class HomeworkStorageService
         }
     }
 
+    public Homework? LoadFromFile(string filePath)
+    {
+        _logger.Debug("正在从文件加载作业: {Path}", filePath);
+        try
+        {
+            if (!File.Exists(filePath))
+            {
+                _logger.Warning("作业文件不存在: {Path}", filePath);
+                return null;
+            }
+            string json = File.ReadAllText(filePath);
+            var homework = JsonSerializer.Deserialize<Homework>(json,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            _logger.Debug("作业已从文件加载: {Path}", filePath);
+            return homework;
+        }
+        catch (Exception ex)
+        {
+            _logger.Warning(ex, "从文件加载作业时出错: {Path}", filePath);
+            return null;
+        }
+    }
+
     public List<DateOnly> GetAllHomeworkDates()
     {
         var dataDir = GetDataDir();
