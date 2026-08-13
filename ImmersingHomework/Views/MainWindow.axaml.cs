@@ -350,4 +350,14 @@ public partial class MainWindow : Window
         dialog.CloseButtonClick += (_, _) => { dialog.Hide(); };
         await dialog.ShowAsync(this);
     }
+
+    private void FreezeButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void RestoreButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        throw new NotImplementedException();
+    }
 }
