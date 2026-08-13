@@ -407,16 +407,25 @@ public partial class MainWindow : Window
         string? selectedSnapshotPath = null;
         foreach (var snapshot in snapshots)
         {
-            var radio = new RadioButton
-            {
-                Content = snapshot.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
-                GroupName = "SnapshotSelection"
-            };
+            var radio = new RadioButton { GroupName = "SnapshotSelection" };
             radio.IsCheckedChanged += (s, _) =>
             {
                 if (s is RadioButton { IsChecked: true })
                     selectedSnapshotPath = snapshot.FilePath;
             };
+
+            var previewButton = new Button { Content = "预览" };
+            previewButton.Click += async (_, _) => await ShowSnapshotPreviewAsync(snapshot.FilePath);
+
+            var radioContent = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+            radioContent.Children.Add(new TextBlock
+            {
+                Text = snapshot.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
+                VerticalAlignment = VerticalAlignment.Center
+            });
+            radioContent.Children.Add(previewButton);
+
+            radio.Content = radioContent;
             panel.Children.Add(radio);
         }
 
@@ -542,5 +551,31 @@ public partial class MainWindow : Window
         _storageService.Save(mergedHomework);
         HomeworkPanel.Refresh();
         _logger.Information("作业合并完成");
+    }
+
+    private async Task ShowSnapshotPreviewAsync(string snapshotPath)
+    {
+        var homework = _storageService.LoadFromFile(snapshotPath);
+        if (homework is null)
+        {
+            _logger.Warning("预览快照失败，无法加载: {Snapshot}", snapshotPath);
+            return;
+        }
+
+        var homeworkPanel = new HomeworkPanel(false)
+        {
+            Width = 600,
+            Height = 400
+        };
+        homeworkPanel.DisplayHomework(homework);
+
+        var dialog = new FAContentDialog()
+        {
+            Title = "快照预览",
+            Content = homeworkPanel,
+            CloseButtonText = "关闭"
+        };
+        dialog.CloseButtonClick += (_, _) => dialog.Hide();
+        await dialog.ShowAsync(this);
     }
 }

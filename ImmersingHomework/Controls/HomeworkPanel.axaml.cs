@@ -40,7 +40,11 @@ public partial class  HomeworkPanel : UserControl
 
     private readonly HomeworkStorageService _storageService;
 
-    public HomeworkPanel()
+    public HomeworkPanel() : this(true)
+    {
+    }
+
+    public HomeworkPanel(bool autoLoad)
     {
         _logger.Information("HomeworkPanel 初始化开始");
         InitializeComponent();
@@ -56,8 +60,39 @@ public partial class  HomeworkPanel : UserControl
             panel.ApplyFrozenStateToSubjects();
             panel.FrozenChanged?.Invoke(panel.IsFrozen);
         });
-        Date = DateOnly.FromDateTime(DateTime.Now);
+        if (autoLoad)
+            Date = DateOnly.FromDateTime(DateTime.Now);
         _logger.Information("HomeworkPanel 初始化完成");
+    }
+
+    public void DisplayHomework(Homework homework)
+    {
+        _logger.Debug("直接展示作业内容，日期: {Date}", homework.Date);
+        SubjectHomeworkPanels.IsVisible = false;
+        SubjectHomeworkPanels.Children.Clear();
+        IsFrozen = homework.Frozen;
+
+        var hasHomework = false;
+        if (homework.HomeworkItems is { Count: > 0 })
+        {
+            foreach (var subject in homework.HomeworkItems.Select(item => item.Subject).Distinct())
+            {
+                if (string.IsNullOrEmpty(subject)) continue;
+                var subjectItems = homework.GetHomeworkItemsBySubject(subject);
+                if (subjectItems is { Count: > 0 })
+                {
+                    var subjectPanel = new SubjectHomeworkPanel();
+                    subjectPanel.SetData(subject, subjectItems);
+                    subjectPanel.IsFrozen = IsFrozen;
+                    SubjectHomeworkPanels.Children.Add(subjectPanel);
+                    hasHomework = true;
+                }
+            }
+        }
+
+        SubjectHomeworkPanels.IsVisible = true;
+        NoHomeworkText.IsVisible = !hasHomework;
+        _logger.Debug("作业内容展示完成");
     }
 
     public void Refresh()
