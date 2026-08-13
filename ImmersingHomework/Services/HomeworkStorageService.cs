@@ -26,6 +26,32 @@ public class HomeworkStorageService
         return Path.Combine(Directory.GetCurrentDirectory(), "Data", "Homeworks");
     }
 
+    private string GetNextSnapshotPath(DateOnly date)
+    {
+        var dataDir = GetDataDir();
+        var prefix = $"{date.Year:D4}-{date.Month:D2}-{date.Day:D2}_snapshot-";
+        var max = 0;
+        foreach (var file in Directory.GetFiles(dataDir, $"{prefix}*.json"))
+        {
+            var fileName = Path.GetFileNameWithoutExtension(file);
+            var number = fileName[prefix.Length..];
+            if (int.TryParse(number, out var n) && n > max)
+                max = n;
+        }
+        return Path.Combine(dataDir, $"{prefix}{max + 1}.json");
+    }
+
+    private void SaveSnapshot(DateOnly date)
+    {
+        var filePath = GetFilePath(date);
+        if (!File.Exists(filePath))
+            return;
+
+        var snapshotPath = GetNextSnapshotPath(date);
+        _logger.Information("保存作业快照，日期: {Date}，快照文件: {Snapshot}", date, snapshotPath);
+        File.Copy(filePath, snapshotPath);
+    }
+
     // 检查指定日期的作业文件是否存在
     public bool Exists(DateOnly date)
     {
@@ -41,6 +67,7 @@ public class HomeworkStorageService
             _logger.Information("创建作业数据目录: {DataDir}", dataDir);
             Directory.CreateDirectory(dataDir);
         }
+        SaveSnapshot(homework.Date);
         string json = JsonSerializer.Serialize(homework, new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText(GetFilePath(homework.Date), json);
         _logger.Debug("作业已保存，日期: {Date}", homework.Date);
@@ -55,6 +82,7 @@ public class HomeworkStorageService
             _logger.Information("创建作业数据目录: {DataDir}", dataDir);
             Directory.CreateDirectory(dataDir);
         }
+        SaveSnapshot(homework.Date);
         string json = JsonSerializer.Serialize(homework, new JsonSerializerOptions { WriteIndented = true });
         await File.WriteAllTextAsync(GetFilePath(homework.Date), json);
         _logger.Debug("作业已异步保存，日期: {Date}", homework.Date);
