@@ -45,8 +45,12 @@ public class AppSettings
     public ObservableProperty<bool> EnableClassIslandIPCService { get; set; } = new(false);
 
     public ObservableProperty<bool> ClassIslandTakeoverSubjects { get; set; } = new(false);
+    
+    public ObservableProperty<bool> ShowHomeworkAfterSchool { get; set; } = new(false);
 
     public ObservableProperty<int> AfterSchoolShowMainWindowWaitSecond { get; set; } = new(120);
+    
+    public ObservableProperty<bool> ShowHomeworkBeforeFirstClassNextDay { get; set; } = new(false);
 
     public AppSettings()
     {
@@ -75,7 +79,9 @@ public class AppSettings
         LaunchAtStartup.Value = loaded.LaunchAtStartup.Value;
         EnableClassIslandIPCService.Value = loaded.EnableClassIslandIPCService.Value;
         ClassIslandTakeoverSubjects.Value = loaded.ClassIslandTakeoverSubjects.Value;
+        ShowHomeworkAfterSchool.Value = loaded.ShowHomeworkAfterSchool.Value;
         AfterSchoolShowMainWindowWaitSecond.Value = loaded.AfterSchoolShowMainWindowWaitSecond.Value;
+        ShowHomeworkBeforeFirstClassNextDay.Value = loaded.ShowHomeworkBeforeFirstClassNextDay.Value;
         HitokotoDisplayMode.Value = loaded.HitokotoDisplayMode.Value;
         HitokotoSource.Value = loaded.HitokotoSource.Value;
         HitokotoRefreshTimeSpan.Value = loaded.HitokotoRefreshTimeSpan.Value;
@@ -93,7 +99,9 @@ public class AppSettings
         LaunchAtStartup.ValueChanged += _ => MarkDirty();
         EnableClassIslandIPCService.ValueChanged += _ => MarkDirty();
         ClassIslandTakeoverSubjects.ValueChanged += _ => MarkDirty();
+        ShowHomeworkAfterSchool.ValueChanged += _ => MarkDirty(); 
         AfterSchoolShowMainWindowWaitSecond.ValueChanged += _ => MarkDirty();
+        ShowHomeworkBeforeFirstClassNextDay.ValueChanged += _ => MarkDirty();
         HitokotoDisplayMode.ValueChanged += _ => MarkDirty();
         HitokotoSource.ValueChanged += _ => MarkDirty();
         HitokotoRefreshTimeSpan.ValueChanged += _ => MarkDirty();

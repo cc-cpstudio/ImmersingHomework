@@ -104,7 +104,8 @@ public partial class App : Application
                 SetupTrayIcon();
 
                 if (AppSettings.Instance.EnableClassIslandIPCService.Value &&
-                    ClassIslandService.Instance.IsCurrentTimeBeforeFirstClass())
+                    ClassIslandService.Instance.IsCurrentTimeBeforeFirstClass() &&
+                    AppSettings.Instance.ShowHomeworkBeforeFirstClassNextDay.Value)
                 {
                     _logger.Information("当前时间在第一节课前，显示主界面");
                     ShowMainWindow();

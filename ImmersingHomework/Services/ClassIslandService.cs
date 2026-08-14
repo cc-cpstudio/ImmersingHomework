@@ -48,6 +48,7 @@ public class ClassIslandService
         });
         _client.JsonIpcProvider.AddNotifyHandler(IpcRoutedNotifyIds.OnAfterSchoolNotifyId, async () =>
         {
+            if (!AppSettings.Instance.ShowHomeworkAfterSchool.Value) return;
             var waitSeconds = AppSettings.Instance.AfterSchoolShowMainWindowWaitSecond.Value;
             _logger.Information("收到放学通知（OnAfterSchool），{WaitSeconds} 秒后显示主界面", waitSeconds);
             await Task.Delay(waitSeconds * 1000);
@@ -57,6 +58,7 @@ public class ClassIslandService
         });
         _client.JsonIpcProvider.AddNotifyHandler(IpcRoutedNotifyIds.OnClassNotifyId, () =>
         {
+            if (!AppSettings.Instance.ShowHomeworkBeforeFirstClassNextDay.Value) return;
             _logger.Information("收到上课通知（OnClass）");
             var lessonsService = _client.Provider.CreateIpcProxy<IPublicLessonsService>(_client.PeerProxy);
             var layoutItems = lessonsService.CurrentClassPlan?.TimeLayout?.Layouts;
@@ -101,6 +103,7 @@ public class ClassIslandService
             _logger.Warning("ClassIsland 服务尚未初始化，无法判断当前时间是否在第一节课前");
             return false;
         }
+        
         var lessonsService = _client.Provider.CreateIpcProxy<IPublicLessonsService>(_client.PeerProxy);
         var layoutItems = lessonsService.CurrentClassPlan?.TimeLayout?.Layouts;
         var firstClassLayoutItem = layoutItems?.FirstOrDefault(i => i.TimeType == 0);
