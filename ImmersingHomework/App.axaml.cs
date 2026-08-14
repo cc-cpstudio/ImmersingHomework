@@ -102,6 +102,13 @@ public partial class App : Application
                 _floatingButtonWindow.ShowWithAnimation();
 
                 SetupTrayIcon();
+
+                if (AppSettings.Instance.EnableClassIslandIPCService.Value &&
+                    ClassIslandService.Instance.IsCurrentTimeBeforeFirstClass())
+                {
+                    _logger.Information("当前时间在第一节课前，显示主界面");
+                    ShowMainWindow();
+                }
             }
             else
             {
@@ -295,15 +302,20 @@ public partial class App : Application
         ShowMainWindow();
     }
 
-    private void ShowMainWindow()
+    public void HideMainWindow()
     {
-        if (_mainWindow != null)
-        {
-            _mainWindow.WindowState = Avalonia.Controls.WindowState.FullScreen;
-            _mainWindow.Activate();
-            _mainWindow.Show();
-            _mainWindow.HomeworkPanel.Refresh();
-        }
+        if (_mainWindow is null) return;
+        ShowFloatingButton();
+        _mainWindow.Hide();
+    }
+
+    public void ShowMainWindow()
+    {
+        if (_mainWindow is null) return;
+        _mainWindow.WindowState = Avalonia.Controls.WindowState.FullScreen;
+        _mainWindow.Activate();
+        _mainWindow.Show();
+        _mainWindow.HomeworkPanel.Refresh();
     }
 
     private void ShowFloatingButton()

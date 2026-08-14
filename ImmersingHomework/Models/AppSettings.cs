@@ -46,6 +46,8 @@ public class AppSettings
 
     public ObservableProperty<bool> ClassIslandTakeoverSubjects { get; set; } = new(false);
 
+    public ObservableProperty<int> AfterSchoolShowMainWindowWaitSecond { get; set; } = new(120);
+
     public AppSettings()
     {
     }
@@ -73,6 +75,7 @@ public class AppSettings
         LaunchAtStartup.Value = loaded.LaunchAtStartup.Value;
         EnableClassIslandIPCService.Value = loaded.EnableClassIslandIPCService.Value;
         ClassIslandTakeoverSubjects.Value = loaded.ClassIslandTakeoverSubjects.Value;
+        AfterSchoolShowMainWindowWaitSecond.Value = loaded.AfterSchoolShowMainWindowWaitSecond.Value;
         HitokotoDisplayMode.Value = loaded.HitokotoDisplayMode.Value;
         HitokotoSource.Value = loaded.HitokotoSource.Value;
         HitokotoRefreshTimeSpan.Value = loaded.HitokotoRefreshTimeSpan.Value;
@@ -90,6 +93,7 @@ public class AppSettings
         LaunchAtStartup.ValueChanged += _ => MarkDirty();
         EnableClassIslandIPCService.ValueChanged += _ => MarkDirty();
         ClassIslandTakeoverSubjects.ValueChanged += _ => MarkDirty();
+        AfterSchoolShowMainWindowWaitSecond.ValueChanged += _ => MarkDirty();
         HitokotoDisplayMode.ValueChanged += _ => MarkDirty();
         HitokotoSource.ValueChanged += _ => MarkDirty();
         HitokotoRefreshTimeSpan.ValueChanged += _ => MarkDirty();
