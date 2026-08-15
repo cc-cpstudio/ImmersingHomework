@@ -19,6 +19,8 @@ public static class HomeworkQrCodeService
     private const string TagsKey = "t";
     private const string TemplateNameKey = "n";
     private const string TemplateParamsKey = "p";
+    private const string TagNameKey = "n";
+    private const string TagColorKey = "c";
 
     public static string? GenerateQrCode(Homework homework, string outputPath)
     {
@@ -120,7 +122,14 @@ public static class HomeworkQrCodeService
                 writer.WriteTextString(TagsKey);
                 writer.WriteStartArray(item.Tags.Count);
                 foreach (var tag in item.Tags)
+                {
+                    writer.WriteStartMap(2);
+                    writer.WriteTextString(TagNameKey);
                     writer.WriteTextString(tag.Name);
+                    writer.WriteTextString(TagColorKey);
+                    writer.WriteByteString(new[] { tag.Color.A, tag.Color.R, tag.Color.G, tag.Color.B });
+                    writer.WriteEndMap();
+                }
                 writer.WriteEndArray();
             }
 
@@ -183,7 +192,7 @@ public static class HomeworkQrCodeService
                         content = reader.ReadTextString();
                         break;
                     case TagsKey:
-                        tags = ReadStringArray(reader).Select(s => new TagModel { Name = s }).ToList();
+                        tags = ReadTagArray(reader);
                         break;
                     case TemplateNameKey:
                         templateName = reader.ReadTextString();
@@ -225,6 +234,46 @@ public static class HomeworkQrCodeService
         for (int i = 0; count.HasValue ? i < count.Value : reader.PeekState() != CborReaderState.EndArray; i++)
         {
             list.Add(reader.ReadTextString());
+        }
+        reader.ReadEndArray();
+        return list;
+    }
+
+    private static List<TagModel> ReadTagArray(CborReader reader)
+    {
+        var list = new List<TagModel>();
+        int? count = reader.ReadStartArray();
+        for (int i = 0; count.HasValue ? i < count.Value : reader.PeekState() != CborReaderState.EndArray; i++)
+        {
+            if (reader.PeekState() == CborReaderState.TextString)
+            {
+                list.Add(new TagModel { Name = reader.ReadTextString() });
+                continue;
+            }
+
+            string name = string.Empty;
+            var color = new Color { A = 0xFF, R = 0xAD, G = 0xD8, B = 0xE6 };
+            int? mapCount = reader.ReadStartMap();
+            for (int k = 0; mapCount.HasValue ? k < mapCount.Value : reader.PeekState() != CborReaderState.EndMap; k++)
+            {
+                string key = reader.ReadTextString();
+                switch (key)
+                {
+                    case TagNameKey:
+                        name = reader.ReadTextString();
+                        break;
+                    case TagColorKey:
+                        var bytes = reader.ReadByteString();
+                        if (bytes.Length == 4)
+                            color = new Color { A = bytes[0], R = bytes[1], G = bytes[2], B = bytes[3] };
+                        break;
+                    default:
+                        reader.SkipValue();
+                        break;
+                }
+            }
+            reader.ReadEndMap();
+            list.Add(new TagModel { Name = name, Color = color });
         }
         reader.ReadEndArray();
         return list;
