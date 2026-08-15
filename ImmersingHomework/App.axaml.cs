@@ -7,6 +7,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Threading;
 using ImmersingHomework.Abstractions;
 using ImmersingHomework.Models;
 using ImmersingHomework.Shared.Models;
@@ -27,6 +28,7 @@ public partial class App : Application
     private PlatformServiceBase? _platformService;
     private IClassicDesktopStyleApplicationLifetime? _desktopLifetime;
     private TrayIcon? _trayIcon;
+    private bool _isShowingExceptionWindow;
     
     public static readonly HttpClient HttpClient = new();
     
@@ -43,6 +45,8 @@ public partial class App : Application
     public override void OnFrameworkInitializationCompleted()
     {
         _logger.Information("应用框架初始化完成");
+
+        RegisterGlobalExceptionHandlers();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
@@ -80,7 +84,7 @@ public partial class App : Application
             {
                 _mainWindow = new MainWindow();
                 _floatingButtonWindow = new FloatingButtonWindow();
-
+            
                 if (_platformService != null)
                 {
                     _platformService.SetTopmost(_floatingButtonWindow);
@@ -100,9 +104,9 @@ public partial class App : Application
                 _floatingButtonWindow.Closing += FloatingButtonWindow_Closing;
             
                 _floatingButtonWindow.ShowWithAnimation();
-
+            
                 SetupTrayIcon();
-
+            
                 if (AppSettings.Instance.EnableClassIslandIPCService.Value &&
                     ClassIslandService.Instance.IsCurrentTimeBeforeFirstClass() &&
                     AppSettings.Instance.ShowHomeworkBeforeFirstClassNextDay.Value)
@@ -120,6 +124,52 @@ public partial class App : Application
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private void RegisterGlobalExceptionHandlers()
+    {
+        Dispatcher.UIThread.UnhandledException += OnDispatcherUnhandledException;
+        AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+        {
+            var ex = e.ExceptionObject as Exception ?? new Exception(e.ExceptionObject?.ToString());
+            _logger.Fatal(ex, "未处理的异常 (AppDomain)");
+            ShowExceptionWindow(ex);
+        };
+        TaskScheduler.UnobservedTaskException += (_, e) =>
+        {
+            e.SetObserved();
+            _logger.Error(e.Exception, "未观察的任务异常");
+            ShowExceptionWindow(e.Exception);
+        };
+    }
+
+    private void OnDispatcherUnhandledException(object? sender, DispatcherUnhandledExceptionEventArgs e)
+    {
+        e.Handled = true;
+        _logger.Fatal(e.Exception, "未处理的异常 (UI 线程)");
+        ShowExceptionWindow(e.Exception);
+    }
+
+    private void ShowExceptionWindow(Exception ex)
+    {
+        if (!Dispatcher.UIThread.CheckAccess())
+        {
+            Dispatcher.UIThread.Post(() => ShowExceptionWindow(ex));
+            return;
+        }
+
+        if (_isShowingExceptionWindow)
+            return;
+        _isShowingExceptionWindow = true;
+
+        try
+        {
+            new ExceptionWindow(ex.ToString()).Show();
+        }
+        catch (Exception windowEx)
+        {
+            _logger.Error(windowEx, "显示异常窗口失败");
+        }
     }
 
     private void ApplyLaunchAtStartupSetting()
@@ -166,26 +216,35 @@ public partial class App : Application
 
     private void TrayMenuItem_Click(object? sender, EventArgs e)
     {
-        if (sender is NativeMenuItem menuItem)
+        if (sender is not NativeMenuItem menuItem)
+            return;
+
+        var header = menuItem.Header?.ToString();
+
+        // 托盘菜单点击可能在非 UI 线程（如 Linux 的 DBus）回调，
+        // 统一投递到 UI 线程，确保异常能被 Dispatcher.UnhandledException 捕获。
+        Dispatcher.UIThread.Post(() => HandleTrayMenuItemClick(header));
+    }
+
+    private void HandleTrayMenuItemClick(string? header)
+    {
+        switch (header)
         {
-            switch (menuItem.Header)
-            {
-                case "显示主窗口":
-                    ShowMainWindow();
-                    break;
-                case "显示/隐藏浮窗":
-                    ToggleFloatingButton();
-                    break;
-                case "打开设置窗口":
-                    OpenSettingsWindow();
-                    break;
-                case "重启":
-                    RestartApplication();
-                    break;
-                case "退出":
-                    ExitApplication();
-                    break;
-            }
+            case "显示主窗口":
+                ShowMainWindow();
+                break;
+            case "显示/隐藏浮窗":
+                ToggleFloatingButton();
+                break;
+            case "打开设置窗口":
+                OpenSettingsWindow();
+                break;
+            case "重启":
+                RestartApplication();
+                break;
+            case "退出":
+                ExitApplication();
+                break;
         }
     }
 

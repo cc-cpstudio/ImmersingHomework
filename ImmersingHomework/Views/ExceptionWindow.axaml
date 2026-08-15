@@ -1,0 +1,23 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:fa="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="ImmersingHomework.Views.ExceptionWindow"
+        Title="ExceptionWindow" Width="600" Height="400"
+        RequestedThemeVariant="Light">
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" Spacing="16" Margin="24">
+                <TextBlock FontSize="32" FontWeight="Bold">Oops！看来开发者要背锅了。</TextBlock>
+                <TextBlock FontSize="16">软件发生了致命错误，需要重启。</TextBlock>
+                <Border Background="LightGray" CornerRadius="4" Padding="8" VerticalAlignment="Stretch">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                                <TextBlock x:Name="StackTraceTextBlock" FontFamily="Consolas, Menlo, monospace" FontSize="12" TextWrapping="NoWrap"></TextBlock>
+                        </ScrollViewer>
+                </Border>
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <Button Grid.Column="0" HorizontalAlignment="Stretch" Click="FeedbackButton_OnClick">向开发者反馈</Button>
+                        <Button Grid.Column="1" HorizontalAlignment="Stretch" Click="RestartButton_OnClick">重启软件</Button>
+                </Grid>
+        </StackPanel>
+</Window>
