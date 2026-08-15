@@ -19,7 +19,7 @@ public partial class ExceptionWindow : Window
 
     public ExceptionWindow(string stackTrace) : this()
     {
-        StackTraceTextBlock.Text = stackTrace;
+        StackTraceTextBox.Text = stackTrace;
     }
 
     private void FeedbackButton_OnClick(object? sender, RoutedEventArgs e)
