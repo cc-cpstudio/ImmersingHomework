@@ -46,29 +46,28 @@ public class UafPdfService
 
     private static readonly PdfDeviceRgb DefaultTagColor = new(220f / 255, 240f / 255, 255f / 255);
 
-    private PdfFont? _fontBold;
-    private PdfFont? _fontMedium;
-    private PdfFont? _fontRegular;
+    private byte[]? _fontBoldData;
+    private byte[]? _fontMediumData;
+    private byte[]? _fontRegularData;
 
     public void InitializeFonts()
     {
         var fontPath = FontAssets.Directory;
 
-        _fontBold = LoadFont(IOPath.Combine(fontPath, "HarmonyOS_SansSC_Bold.ttf"));
-        _fontMedium = LoadFont(IOPath.Combine(fontPath, "HarmonyOS_SansSC_Medium.ttf"));
-        _fontRegular = LoadFont(IOPath.Combine(fontPath, "HarmonyOS_SansSC_Regular.ttf"));
+        _fontBoldData = File.ReadAllBytes(IOPath.Combine(fontPath, "HarmonyOS_SansSC_Bold.ttf"));
+        _fontMediumData = File.ReadAllBytes(IOPath.Combine(fontPath, "HarmonyOS_SansSC_Medium.ttf"));
+        _fontRegularData = File.ReadAllBytes(IOPath.Combine(fontPath, "HarmonyOS_SansSC_Regular.ttf"));
     }
 
     public void InitializeFonts(string boldPath, string mediumPath, string regularPath)
     {
-        _fontBold = LoadFont(boldPath);
-        _fontMedium = LoadFont(mediumPath);
-        _fontRegular = LoadFont(regularPath);
+        _fontBoldData = File.ReadAllBytes(boldPath);
+        _fontMediumData = File.ReadAllBytes(mediumPath);
+        _fontRegularData = File.ReadAllBytes(regularPath);
     }
 
-    private static PdfFont LoadFont(string path)
+    private static PdfFont LoadFont(byte[] fontData)
     {
-        var fontData = File.ReadAllBytes(path);
         return PdfFontFactory.CreateFont(fontData, PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.FORCE_EMBEDDED);
     }
 
@@ -100,88 +99,91 @@ public class UafPdfService
     private byte[] GeneratePdfInternal(List<UafPayload> payloads, DateOnly date, Dictionary<string, PdfDeviceRgb> tagColors)
     {
         using var ms = new MemoryStream();
-        using var writer = new PdfWriter(ms);
-        using var pdfDoc = new PdfDocument(writer);
-
-        var currentPage = pdfDoc.AddNewPage(PageSize.A4);
-        var currentY = Margin;
-        var black = new PdfDeviceRgb(0, 0, 0);
-        var grouped = payloads.GroupBy(p => p.Subject).ToList();
-
-        void NewPage()
+        using (var writer = new PdfWriter(ms))
+        using (var pdfDoc = new PdfDocument(writer))
         {
-            currentPage = pdfDoc.AddNewPage(PageSize.A4);
-            currentY = Margin;
-        }
+            var fontBold = LoadFont(_fontBoldData!);
+            var fontMedium = LoadFont(_fontMediumData!);
+            var fontRegular = LoadFont(_fontRegularData!);
 
-        var title = $"{date.Month}月{date.Day}日作业";
-        var titleWidth = _fontBold!.GetWidth(title, TitleFontSize);
-        DrawCanvasText(currentPage, title, _fontBold, TitleFontSize, (PageWidth - titleWidth) / 2, currentY, black);
-        currentY += TitleLineHeight;
+            var currentPage = pdfDoc.AddNewPage(PageSize.A4);
+            var currentY = Margin;
+            var black = new PdfDeviceRgb(0, 0, 0);
+            var grouped = payloads.GroupBy(p => p.Subject).ToList();
 
-        foreach (var subjectGroup in grouped)
-        {
-            var subjectText = $"科目：{subjectGroup.Key}";
-            var firstItem = true;
-
-            foreach (var item in subjectGroup)
+            void NewPage()
             {
-                var itemBlockHeight = ContentSpacing + ContentLineHeight;
-                if (item.Tags.Count > 0)
+                currentPage = pdfDoc.AddNewPage(PageSize.A4);
+                currentY = Margin;
+            }
+
+            var title = $"{date.Month}月{date.Day}日作业";
+            var titleWidth = fontBold.GetWidth(title, TitleFontSize);
+            DrawCanvasText(currentPage, title, fontBold, TitleFontSize, (PageWidth - titleWidth) / 2, currentY, black);
+            currentY += TitleLineHeight;
+
+            foreach (var subjectGroup in grouped)
+            {
+                var subjectText = $"科目：{subjectGroup.Key}";
+                var firstItem = true;
+
+                foreach (var item in subjectGroup)
                 {
-                    var tagAreaHeight = CalculateTagAreaHeight(item.Tags, _fontRegular!);
-                    itemBlockHeight += ContentToTagSpacing + tagAreaHeight;
-                }
+                    var itemBlockHeight = ContentSpacing + ContentLineHeight;
+                    if (item.Tags.Count > 0)
+                    {
+                        var tagAreaHeight = CalculateTagAreaHeight(item.Tags, fontRegular);
+                        itemBlockHeight += ContentToTagSpacing + tagAreaHeight;
+                    }
 
-                var headerHeight = firstItem ? TitleToSubjectSpacing + SubjectLineHeight : 0;
-                var totalNeeded = itemBlockHeight + headerHeight;
+                    var headerHeight = firstItem ? TitleToSubjectSpacing + SubjectLineHeight : 0;
+                    var totalNeeded = itemBlockHeight + headerHeight;
 
-                if (currentY + totalNeeded > PageHeight - PageBottom)
-                {
-                    NewPage();
-                    firstItem = true;
-                    headerHeight = TitleToSubjectSpacing + SubjectLineHeight;
-                }
+                    if (currentY + totalNeeded > PageHeight - PageBottom)
+                    {
+                        NewPage();
+                        firstItem = true;
+                        headerHeight = TitleToSubjectSpacing + SubjectLineHeight;
+                    }
 
-                if (firstItem)
-                {
-                    currentY += TitleToSubjectSpacing;
-                    DrawCanvasText(currentPage, subjectText, _fontMedium!, SubjectFontSize, Margin, currentY, black);
-                    currentY += SubjectLineHeight;
-                    firstItem = false;
-                }
+                    if (firstItem)
+                    {
+                        currentY += TitleToSubjectSpacing;
+                        DrawCanvasText(currentPage, subjectText, fontMedium, SubjectFontSize, Margin, currentY, black);
+                        currentY += SubjectLineHeight;
+                        firstItem = false;
+                    }
 
-                currentY += ContentSpacing;
-                var contentText = $"{GetItemIndexInDate(payloads, item)}. {item.Content}";
-                DrawCanvasText(currentPage, contentText, _fontRegular!, ContentFontSize, Margin, currentY, black);
-                currentY += ContentLineHeight;
+                    currentY += ContentSpacing;
+                    var contentText = $"{GetItemIndexInDate(payloads, item)}. {item.Content}";
+                    DrawCanvasText(currentPage, contentText, fontRegular, ContentFontSize, Margin, currentY, black);
+                    currentY += ContentLineHeight;
 
-                if (item.Tags.Count > 0)
-                {
-                    currentY += ContentToTagSpacing;
-                    currentY = DrawTags(currentPage, item.Tags, _fontRegular!, currentY, tagColors);
+                    if (item.Tags.Count > 0)
+                    {
+                        currentY += ContentToTagSpacing;
+                        currentY = DrawTags(currentPage, item.Tags, fontRegular, currentY, tagColors);
+                    }
                 }
             }
+
+            var footerHeight = ContentSpacing * 2 + FooterLineHeight;
+            if (currentY + footerHeight > PageHeight - PageBottom)
+                NewPage();
+
+            currentY += ContentSpacing * 2;
+            var footerText = "由 ImmersingHomework 生成，由 UAF 提供技术支持";
+            var footerWidth = fontRegular.GetWidth(footerText, FooterFontSize);
+            var footerGray = new PdfDeviceRgb(166f / 255, 166f / 255, 166f / 255);
+            DrawCanvasText(currentPage, footerText, fontRegular, FooterFontSize, (PageWidth - footerWidth) / 2, currentY, footerGray);
+
+            var csv = UafCsvService.Serialize(payloads).GetAwaiter().GetResult();
+            var csvBytes = Encoding.UTF8.GetBytes(csv);
+            var fs = PdfFileSpec.CreateEmbeddedFileSpec(
+                pdfDoc, csvBytes, "UAF Payload", "uaf_payload.csv",
+                new PdfName("text/csv"), null, PdfName.Data);
+            pdfDoc.AddFileAttachment("uaf_payload.csv", fs);
         }
-
-        var footerHeight = ContentSpacing * 2 + FooterLineHeight;
-        if (currentY + footerHeight > PageHeight - PageBottom)
-            NewPage();
-
-        currentY += ContentSpacing * 2;
-        var footerText = "由 ImmersingHomework 生成，由 UAF 提供技术支持";
-        var footerWidth = _fontRegular!.GetWidth(footerText, FooterFontSize);
-        var footerGray = new PdfDeviceRgb(166f / 255, 166f / 255, 166f / 255);
-        DrawCanvasText(currentPage, footerText, _fontRegular, FooterFontSize, (PageWidth - footerWidth) / 2, currentY, footerGray);
-
-        var csv = UafCsvService.Serialize(payloads).GetAwaiter().GetResult();
-        var csvBytes = Encoding.UTF8.GetBytes(csv);
-        var fs = PdfFileSpec.CreateEmbeddedFileSpec(
-            pdfDoc, csvBytes, "UAF Payload", "uaf_payload.csv",
-            new PdfName("text/csv"), null, PdfName.Data);
-        pdfDoc.AddFileAttachment("uaf_payload.csv", fs);
-
-        pdfDoc.Close();
         return ms.ToArray();
     }
 
@@ -280,7 +282,7 @@ public class UafPdfService
 
     private void EnsureFonts()
     {
-        if (_fontBold == null || _fontMedium == null || _fontRegular == null)
+        if (_fontBoldData == null || _fontMediumData == null || _fontRegularData == null)
             InitializeFonts();
     }
 
