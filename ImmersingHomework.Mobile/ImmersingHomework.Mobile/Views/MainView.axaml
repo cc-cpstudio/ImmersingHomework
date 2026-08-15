@@ -4,7 +4,11 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ImmersingHomework.Mobile.Views.MainView">
-
-    <TextBox HorizontalAlignment="Center"
-             VerticalAlignment="Center" />
+    <ContentControl x:Name="RootContent">
+        <StackPanel x:Name="HomePanel" Orientation="Vertical" Spacing="16" Margin="16">
+            <TextBlock FontSize="24">ImmersingHomework 移动端</TextBlock>
+            <TextBlock FontSize="16">请扫描一体机端提供的作业二维码以继续。</TextBlock>
+            <Button HorizontalAlignment="Stretch" Height="48" Click="OnScanClicked">扫描</Button>
+        </StackPanel>
+    </ContentControl>
 </UserControl>

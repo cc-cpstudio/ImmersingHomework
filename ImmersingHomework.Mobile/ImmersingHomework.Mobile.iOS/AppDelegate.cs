@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.iOS;
 using Avalonia.Media;
+using Microsoft.Maui.ApplicationModel;
 
 namespace ImmersingHomework.Mobile.iOS;
 
@@ -19,5 +20,13 @@ public partial class AppDelegate : AvaloniaAppDelegate<App>
     {
         return base.CustomizeAppBuilder(builder)
             .WithInterFont();
+    }
+
+    public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
+    {
+        Platform.Init();
+        MobileFonts.Initialize();
+        MauiCameraScanner.Initialize();
+        return base.FinishedLaunching(application, launchOptions);
     }
 }

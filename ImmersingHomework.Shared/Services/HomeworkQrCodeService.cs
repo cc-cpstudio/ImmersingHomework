@@ -79,7 +79,12 @@ public static class HomeworkQrCodeService
 
         if (string.IsNullOrEmpty(result.Text))
             throw new InvalidOperationException("QR码内容为空。");
-        byte[] payload = Encoding.Latin1.GetBytes(result.Text);
+        return ParseQrCodeText(result.Text);
+    }
+
+    public static Homework ParseQrCodeText(string text)
+    {
+        byte[] payload = Encoding.Latin1.GetBytes(text);
         return DeserializeCompact(payload);
     }
 

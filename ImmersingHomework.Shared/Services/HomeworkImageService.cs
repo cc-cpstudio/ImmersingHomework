@@ -41,7 +41,7 @@ public class HomeworkImageService
         try
         {
             _fontCollection = new FontCollection();
-            var fontPath = IOPath.Combine(AppContext.BaseDirectory, "Assets", "Fonts");
+            var fontPath = FontAssets.Directory;
             
             if (Directory.Exists(fontPath))
             {
@@ -113,51 +113,69 @@ public class HomeworkImageService
         }
     }
 
-    public static void HomeworkToImage(Homework homework, string outputPath)
+    public static byte[] HomeworkToImageBytes(Homework homework)
     {
         try
         {
-            if (_fontCollection == null || _fontBold == null || _fontMedium == null || _fontRegular == null)
-            {
-                InitializeFonts();
-            }
-
+            EnsureFonts();
             _logger.Information("开始生成作业图片，日期: {Date}", homework.Date);
 
-            var elements = CalculateElements(homework);
-            var totalHeight = CalculateTotalHeight(elements);
-
-            using var image = new Image<Rgba32>(ImageWidth, totalHeight);
-            image.Mutate(x => x.Fill(Color.White));
-
-            var currentY = Margin;
-            object? previous = null;
-            
-            foreach (var element in elements)
-            {
-                if (previous != null)
-                {
-                    currentY += GetSpacing(previous, element);
-                }
-                DrawElement(image, element, ref currentY);
-                previous = element;
-            }
-
-            // 创建输出目录
-            var directory = IOPath.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
-            image.SaveAsPng(outputPath);
-            _logger.Information("作业图片已保存到: {Path}", outputPath);
+            using var image = RenderImage(homework);
+            using var stream = new MemoryStream();
+            image.SaveAsPng(stream);
+            return stream.ToArray();
         }
         catch (Exception ex)
         {
             _logger.Error(ex, "生成作业图片失败");
             throw;
         }
+    }
+
+    public static void HomeworkToImage(Homework homework, string outputPath)
+    {
+        var bytes = HomeworkToImageBytes(homework);
+
+        var directory = IOPath.GetDirectoryName(outputPath);
+        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        File.WriteAllBytes(outputPath, bytes);
+        _logger.Information("作业图片已保存到: {Path}", outputPath);
+    }
+
+    private static void EnsureFonts()
+    {
+        if (_fontCollection == null || _fontBold == null || _fontMedium == null || _fontRegular == null)
+        {
+            InitializeFonts();
+        }
+    }
+
+    private static Image<Rgba32> RenderImage(Homework homework)
+    {
+        var elements = CalculateElements(homework);
+        var totalHeight = CalculateTotalHeight(elements);
+
+        var image = new Image<Rgba32>(ImageWidth, totalHeight);
+        image.Mutate(x => x.Fill(Color.White));
+
+        var currentY = Margin;
+        object? previous = null;
+
+        foreach (var element in elements)
+        {
+            if (previous != null)
+            {
+                currentY += GetSpacing(previous, element);
+            }
+            DrawElement(image, element, ref currentY);
+            previous = element;
+        }
+
+        return image;
     }
 
     private static List<object> CalculateElements(Homework homework)

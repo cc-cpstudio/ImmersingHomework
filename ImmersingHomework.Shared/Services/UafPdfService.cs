@@ -52,7 +52,7 @@ public class UafPdfService
 
     public void InitializeFonts()
     {
-        var fontPath = IOPath.Combine(AppContext.BaseDirectory, "Assets", "Fonts");
+        var fontPath = FontAssets.Directory;
 
         _fontBold = LoadFont(IOPath.Combine(fontPath, "HarmonyOS_SansSC_Bold.ttf"));
         _fontMedium = LoadFont(IOPath.Combine(fontPath, "HarmonyOS_SansSC_Medium.ttf"));

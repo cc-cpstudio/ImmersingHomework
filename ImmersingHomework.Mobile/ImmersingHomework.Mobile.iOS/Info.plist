@@ -14,6 +14,12 @@
 	<true/>
 	<key>MinimumOSVersion</key>
 	<string>13.0</string>
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>ImmersingHomework 使用相机扫描作业二维码。</string>
 	<key>UIDeviceFamily</key>
 	<array>
 		<integer>1</integer>
