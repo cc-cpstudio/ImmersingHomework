@@ -23,8 +23,6 @@ public class ClassIslandService
     private bool _initialized;
 
     public bool Initialized => _initialized;
-
-    public event EventHandler<string> HomeworkAssignmentReminder;
     
     private ClassIslandService()
     {
@@ -46,7 +44,7 @@ public class ClassIslandService
             _logger.Information("收到课间通知（OnBreakingTime）");
             var lessonService = _client.Provider.CreateIpcProxy<IPublicLessonsService>(_client.PeerProxy);
             if (GetPreviousClassSubject() == lessonService.NextClassSubject) return;
-            // TODO 弹出作业布置提醒
+            ((App)Application.Current!).OpenHomeworkAssignmentRemindWindow();
         });
         _client.JsonIpcProvider.AddNotifyHandler(IpcRoutedNotifyIds.OnAfterSchoolNotifyId, async () =>
         {

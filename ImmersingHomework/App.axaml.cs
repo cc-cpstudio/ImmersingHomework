@@ -263,6 +263,13 @@ public partial class App : Application
         }
     }
 
+    public void OpenHomeworkAssignmentRemindWindow()
+    {
+        var remindWindow = new HomeworkAssignmentRemindWindow();
+        remindWindow.Activate();
+        remindWindow.Show();
+    }
+
     private void ToggleFloatingButton()
     {
         if (_floatingButtonWindow != null)
