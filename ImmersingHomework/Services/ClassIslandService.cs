@@ -44,6 +44,8 @@ public class ClassIslandService
         _client.JsonIpcProvider.AddNotifyHandler(IpcRoutedNotifyIds.OnBreakingTimeNotifyId, () =>
         {
             _logger.Information("收到课间通知（OnBreakingTime）");
+            var lessonService = _client.Provider.CreateIpcProxy<IPublicLessonsService>(_client.PeerProxy);
+            if (GetPreviousClassSubject() == lessonService.NextClassSubject) return;
             // TODO 弹出作业布置提醒
         });
         _client.JsonIpcProvider.AddNotifyHandler(IpcRoutedNotifyIds.OnAfterSchoolNotifyId, async () =>
@@ -117,6 +119,79 @@ public class ClassIslandService
         _logger.Information("判断当前时间是否在第一节课前：{Result}（当前时间 {Current}，第一节课开始时间 {StartTime}）",
             result, span, firstClassLayoutItem.StartTime);
         return result;
+    }
+
+    public Subject? GetPreviousClassSubject()
+    {
+        if (!_initialized)
+        {
+            _logger.Warning("ClassIsland 服务尚未初始化，无法获取上一节课科目");
+            return null;
+        }
+
+        var lessonsService = _client.Provider.CreateIpcProxy<IPublicLessonsService>(_client.PeerProxy);
+        var profileService = _client.Provider.CreateIpcProxy<IPublicProfileService>(_client.PeerProxy);
+
+        var currentPlan = lessonsService.CurrentClassPlan;
+        if (currentPlan is null)
+        {
+            _logger.Warning("未加载课表，无法获取上一节课科目");
+            return null;
+        }
+
+        var profile = profileService.Profile;
+        if (!profile.TimeLayouts.TryGetValue(currentPlan.TimeLayoutId, out var layout) || layout is null)
+        {
+            _logger.Warning("未找到当前课表对应的时间表，无法获取上一节课科目");
+            return null;
+        }
+
+        var layouts = layout.Layouts;
+        var boundary = lessonsService.CurrentSelectedIndex >= 0
+            ? lessonsService.CurrentTimeLayoutItem.StartTime
+            : DateTime.Now.TimeOfDay;
+
+        var prevIndex = -1;
+        for (var i = layouts.Count - 1; i >= 0; i--)
+        {
+            if (layouts[i].TimeType == 0 && layouts[i].EndTime <= boundary)
+            {
+                prevIndex = i;
+                break;
+            }
+        }
+
+        if (prevIndex < 0)
+        {
+            _logger.Information("今天没有上一节课");
+            return null;
+        }
+
+        var classIndex = -1;
+        for (var i = 0; i <= prevIndex; i++)
+        {
+            if (layouts[i].TimeType == 0)
+            {
+                classIndex++;
+            }
+        }
+
+        if (classIndex < 0 || classIndex >= currentPlan.Classes.Count)
+        {
+            _logger.Warning("上一节课索引超出课程范围，无法获取科目");
+            return null;
+        }
+
+        var subjectId = currentPlan.Classes[classIndex].SubjectId;
+        if (subjectId == Guid.Empty)
+        {
+            _logger.Information("上一节课未定义科目");
+            return null;
+        }
+
+        profile.Subjects.TryGetValue(subjectId, out var subject);
+        _logger.Information("获取到上一节课科目：{Subject}", subject?.Name);
+        return subject;
     }
 
     private async void Connect()
