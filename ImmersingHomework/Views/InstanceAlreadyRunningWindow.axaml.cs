@@ -1,9 +1,10 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using FluentAvalonia.UI.Windowing;
 
 namespace ImmersingHomework.Views;
 
-public partial class InstanceAlreadyRunningWindow : Window
+public partial class InstanceAlreadyRunningWindow : FAAppWindow
 {
     public InstanceAlreadyRunningWindow()
     {

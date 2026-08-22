@@ -3,11 +3,12 @@ using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using FluentAvalonia.UI.Windowing;
 using Serilog;
 
 namespace ImmersingHomework.Views;
 
-public partial class ExceptionWindow : Window
+public partial class ExceptionWindow : FAAppWindow
 {
     private const string GitHubIssuesUrl = "https://github.com/ImmersingEducation/ImmersingHomework/issues";
     private readonly ILogger _logger = Log.ForContext<ExceptionWindow>();
