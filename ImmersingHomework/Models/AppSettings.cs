@@ -51,6 +51,10 @@ public class AppSettings
     public ObservableProperty<int> AfterSchoolShowMainWindowWaitSecond { get; set; } = new(120);
     
     public ObservableProperty<bool> ShowHomeworkBeforeFirstClassNextDay { get; set; } = new(false);
+    
+    public ObservableProperty<int> FloatingButtonPositionX { get; set; } = new(100);
+    
+    public ObservableProperty<int> FloatingButtonPositionY { get; set; } = new(100);
 
     public AppSettings()
     {
@@ -85,6 +89,8 @@ public class AppSettings
         HitokotoDisplayMode.Value = loaded.HitokotoDisplayMode.Value;
         HitokotoSource.Value = loaded.HitokotoSource.Value;
         HitokotoRefreshTimeSpan.Value = loaded.HitokotoRefreshTimeSpan.Value;
+        FloatingButtonPositionX.Value = loaded.FloatingButtonPositionX.Value;
+        FloatingButtonPositionY.Value = loaded.FloatingButtonPositionY.Value;
         
         SubscribeToChanges();
         _logger.Information("应用设置加载完成");
@@ -105,6 +111,8 @@ public class AppSettings
         HitokotoDisplayMode.ValueChanged += _ => MarkDirty();
         HitokotoSource.ValueChanged += _ => MarkDirty();
         HitokotoRefreshTimeSpan.ValueChanged += _ => MarkDirty();
+        FloatingButtonPositionX.ValueChanged += _ => MarkDirty();
+        FloatingButtonPositionY.ValueChanged += _ => MarkDirty();
     }
 
     private void MarkDirty()
