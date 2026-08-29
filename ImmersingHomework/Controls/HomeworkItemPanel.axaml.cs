@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using ImmersingHomework.Models;
 using ImmersingHomework.Shared.Models;
 using Serilog;
 
@@ -76,12 +77,17 @@ public partial class HomeworkItemPanel : UserControl
         if (tags == null) return;
         _logger.Debug("作业项有 {Count} 个标签", tags.Count);
         
+        var tagColorMap = AppSettings.Instance.Tags
+            .Where(t => !string.IsNullOrEmpty(t.Name))
+            .ToDictionary(t => t.Name, t => t.Color.ToSolidColorBrush());
+        
         for (int i = 0; i < tags.Count; i++)
         {
             var tagModel = tags[i];
             if (!string.IsNullOrEmpty(tagModel.Name))
             {
-                var tagColor = tagModel.Color.ToSolidColorBrush();
+                tagColorMap.TryGetValue(tagModel.Name, out var tagColor);
+                tagColor ??= tagModel.Color.ToSolidColorBrush();
                 
                 var tag = new Tag
                 {
