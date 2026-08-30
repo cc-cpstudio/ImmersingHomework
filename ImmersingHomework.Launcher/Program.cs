@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.IO.Compression;
 
 namespace ImmersingHomework.Launcher;
 
@@ -58,7 +59,22 @@ class Program
             {
                 foreach (var updateDir in Directory.GetDirectories(tempDir))
                 {
-                    CopyDirectoryContents(updateDir, mainDir);
+                    var zipFiles = Directory.GetFiles(updateDir, "*.zip", SearchOption.TopDirectoryOnly);
+                    if (zipFiles.Length > 0)
+                    {
+                        foreach (var zipFile in zipFiles)
+                        {
+                            var extractDir = Path.Combine(updateDir,
+                                $"_{Path.GetFileNameWithoutExtension(zipFile)}_extracted");
+                            ZipFile.ExtractToDirectory(zipFile, extractDir);
+                            CopyDirectoryContents(extractDir, mainDir);
+                        }
+                    }
+                    else
+                    {
+                        CopyDirectoryContents(updateDir, mainDir);
+                    }
+
                     Directory.Delete(updateDir, true);
                     Console.WriteLine($"已应用更新: {Path.GetFileName(updateDir)}");
                 }

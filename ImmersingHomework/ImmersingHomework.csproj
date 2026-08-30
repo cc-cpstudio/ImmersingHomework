@@ -62,10 +62,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\AntonReleaseCenter.Core\AntonReleaseCenter.Core.csproj" />
-      <ProjectReference Include="..\AntonReleaseCenter.SoftwareSDK\AntonReleaseCenter.SoftwareSDK.csproj" />
       <ProjectReference Include="..\ImmersingHomework.Shared\ImmersingHomework.Shared.csproj" />
       <ProjectReference Include="..\ImmersingHomework.Uaf.Core\ImmersingHomework.Uaf.Core.csproj" />
-      <ProjectReference Include="..\AntonReleaseCenter.SoftwareSDK\AntonReleaseCenter.SoftwareSDK.csproj" />
     </ItemGroup>
 </Project>

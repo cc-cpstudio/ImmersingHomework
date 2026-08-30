@@ -1,5 +1,4 @@
 using System;
-using AntonReleaseCenter.Core.DTOs;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
