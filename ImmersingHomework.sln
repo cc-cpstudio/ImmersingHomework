@@ -20,6 +20,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AntonReleaseCenter.Software
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AntonReleaseCenter.Core", "AntonReleaseCenter.Core\AntonReleaseCenter.Core.csproj", "{55AD79D4-29C5-43C9-B2D3-788484DA89B6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImmersingHomework.Launcher", "ImmersingHomework.Launcher\ImmersingHomework.Launcher.csproj", "{8571BD53-94BA-44DF-87C4-19D4B2BDD0AB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -126,6 +128,18 @@ Global
 		{55AD79D4-29C5-43C9-B2D3-788484DA89B6}.Release|x64.Build.0 = Release|Any CPU
 		{55AD79D4-29C5-43C9-B2D3-788484DA89B6}.Release|x86.ActiveCfg = Release|Any CPU
 		{55AD79D4-29C5-43C9-B2D3-788484DA89B6}.Release|x86.Build.0 = Release|Any CPU
+		{8571BD53-94BA-44DF-87C4-19D4B2BDD0AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8571BD53-94BA-44DF-87C4-19D4B2BDD0AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8571BD53-94BA-44DF-87C4-19D4B2BDD0AB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8571BD53-94BA-44DF-87C4-19D4B2BDD0AB}.Debug|x64.Build.0 = Debug|Any CPU
+		{8571BD53-94BA-44DF-87C4-19D4B2BDD0AB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8571BD53-94BA-44DF-87C4-19D4B2BDD0AB}.Debug|x86.Build.0 = Debug|Any CPU
+		{8571BD53-94BA-44DF-87C4-19D4B2BDD0AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8571BD53-94BA-44DF-87C4-19D4B2BDD0AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8571BD53-94BA-44DF-87C4-19D4B2BDD0AB}.Release|x64.ActiveCfg = Release|Any CPU
+		{8571BD53-94BA-44DF-87C4-19D4B2BDD0AB}.Release|x64.Build.0 = Release|Any CPU
+		{8571BD53-94BA-44DF-87C4-19D4B2BDD0AB}.Release|x86.ActiveCfg = Release|Any CPU
+		{8571BD53-94BA-44DF-87C4-19D4B2BDD0AB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
