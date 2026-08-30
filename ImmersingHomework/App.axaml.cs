@@ -1,14 +1,18 @@
 using System;
 using System.Diagnostics;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
+using AntonReleaseCenter.Core.DTOs;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Threading;
+using FluentAvalonia.UI.Controls;
 using ImmersingHomework.Abstractions;
+using ImmersingHomework.Enums;
 using ImmersingHomework.Models;
 using ImmersingHomework.Shared.Models;
 using ImmersingHomework.Services;
@@ -120,6 +124,12 @@ public partial class App : Application
                 _welcomeWindow = new WelcomeWindow();
                 _desktopLifetime.MainWindow = _welcomeWindow;
                 _welcomeWindow.Show();
+            }
+
+            if (!AppSettings.Instance.FirstLaunch)
+            {
+                _logger.Information("启动时自动检查更新");
+                _ = StartupUpdateCheckAsync();
             }
         }
 
@@ -393,5 +403,198 @@ public partial class App : Application
     private void HideFloatingButton()
     {
         _floatingButtonWindow?.HideWithAnimation();
+    }
+
+    private async Task StartupUpdateCheckAsync()
+    {
+        var behavior = AppSettings.Instance.UpdateCheckBehavior.Value;
+        if (behavior == UpdateCheckBehavior.Nothing)
+        {
+            _logger.Information("更新行为为“不执行任何操作”，跳过启动时检查更新");
+            return;
+        }
+
+        CheckUpdateResponse? update;
+        try
+        {
+            update = await UpdateService.CheckUpdateAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "启动时检查更新失败");
+            return;
+        }
+
+        if (update is null || !update.HasUpdate)
+        {
+            _logger.Information("启动时检查更新完成，当前已是最新版本");
+            return;
+        }
+
+        _logger.Information("启动时检查更新发现新版本: {Version}，更新行为: {Behavior}，是否强制更新: {IsForceUpdate}",
+            update.LatestVersion, behavior, update.IsForceUpdate);
+
+        if (update.IsForceUpdate)
+        {
+            _logger.Information("检测到强制更新，忽略更新行为直接下载并安装");
+            await DownloadUpdateAsync(update, installImmediately: true);
+            return;
+        }
+
+        switch (behavior)
+        {
+            case UpdateCheckBehavior.NoticeImmediately:
+                SendUpdateNotification(update);
+                break;
+            case UpdateCheckBehavior.DownloadImmediately:
+                await DownloadUpdateAsync(update, installImmediately: false);
+                break;
+            case UpdateCheckBehavior.InstallImmediately:
+                await DownloadUpdateAsync(update, installImmediately: true);
+                break;
+        }
+    }
+
+    private void SendUpdateNotification(CheckUpdateResponse update)
+    {
+        var title = "ImmersingHomework 更新";
+        var body = $"发现新版本 {update.LatestVersion}。";
+        if (!string.IsNullOrWhiteSpace(update.UpdateLog))
+            body += $"\n{update.UpdateLog}";
+
+        _logger.Information("发送系统更新通知: {Title}", title);
+        _platformService?.SendNotification(title, body);
+    }
+
+    private async Task DownloadUpdateAsync(CheckUpdateResponse update, bool installImmediately)
+    {
+        var window = _desktopLifetime?.MainWindow;
+        if (window is null)
+        {
+            try
+            {
+                await UpdateService.DownloadUpdateAsync(update);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "启动时下载更新失败");
+            }
+            return;
+        }
+
+        using var cts = new CancellationTokenSource();
+
+        var progressBar = new ProgressBar
+        {
+            Minimum = 0,
+            Maximum = 100,
+            Width = 300
+        };
+        var statusText = new TextBlock { Text = "下载进度 0%" };
+        var contentPanel = new StackPanel
+        {
+            Spacing = 12,
+            Children = { statusText, progressBar }
+        };
+
+        var dialog = new FAContentDialog
+        {
+            Title = $"正在下载更新 {update.LatestVersion}",
+            Content = contentPanel,
+            CloseButtonText = "取消"
+        };
+        dialog.CloseButtonClick += (_, _) =>
+        {
+            cts.Cancel();
+            dialog.Hide();
+        };
+
+        var progress = new Progress<double>(value =>
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                progressBar.Value = value;
+                statusText.Text = $"下载进度 {value:F0}%";
+            });
+        });
+
+        var showTask = dialog.ShowAsync(window);
+
+        string? filePath = null;
+        var cancelled = false;
+        var downloadFailed = false;
+        try
+        {
+            filePath = await UpdateService.DownloadUpdateAsync(update, progress, cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            cancelled = true;
+            _logger.Information("用户取消了更新下载");
+        }
+        catch (Exception ex)
+        {
+            downloadFailed = true;
+            _logger.Error(ex, "启动时下载更新失败");
+        }
+
+        dialog.Hide();
+        await showTask;
+
+        if (cancelled)
+            return;
+
+        if (downloadFailed || filePath is null)
+        {
+            await ShowUpdateFailedDialogAsync(window);
+            return;
+        }
+
+        if (installImmediately)
+            await ShowRestartDialogAsync(window);
+        else
+            await ShowDownloadCompletedDialogAsync(window);
+    }
+
+    private async Task ShowDownloadCompletedDialogAsync(Window window)
+    {
+        var dialog = new FAContentDialog
+        {
+            Title = "更新下载完成",
+            Content = "更新已下载完成，将在下次启动时应用。",
+            CloseButtonText = "知道了"
+        };
+        dialog.CloseButtonClick += (_, _) => dialog.Hide();
+        await dialog.ShowAsync(window);
+    }
+
+    private async Task ShowRestartDialogAsync(Window window)
+    {
+        var dialog = new FAContentDialog
+        {
+            Title = "更新已就绪",
+            Content = "更新已下载完成，需要重启软件以应用更新。",
+            PrimaryButtonText = "立即重启",
+            CloseButtonText = "稍后"
+        };
+        dialog.PrimaryButtonClick += (_, _) =>
+        {
+            dialog.Hide();
+            RestartApplication();
+        };
+        dialog.CloseButtonClick += (_, _) => dialog.Hide();
+        await dialog.ShowAsync(window);
+    }
+
+    private async Task ShowUpdateFailedDialogAsync(Window window)
+    {
+        var dialog = new FAContentDialog
+        {
+            Title = "更新下载失败",
+            Content = "更新下载失败，请稍后重试。",
+            CloseButtonText = "知道了"
+        };
+        dialog.CloseButtonClick += (_, _) => dialog.Hide();
+        await dialog.ShowAsync(window);
     }
 }

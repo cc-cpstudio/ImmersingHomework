@@ -111,4 +111,39 @@ public class MacOSPlatformService : PlatformServiceBase
             _logger.Error(ex, "Failed to set launch at startup");
         }
     }
+
+    public override void SendNotification(string title, string message)
+    {
+        try
+        {
+            var script = $"display notification \"{message.Replace("\"", "\\\"")}\" with title \"{title.Replace("\"", "\\\"")}\"";
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "osascript",
+                    Arguments = $"-e \"{script}\"",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                }
+            };
+            process.Start();
+            process.WaitForExit();
+
+            if (process.ExitCode != 0)
+            {
+                var error = process.StandardError.ReadToEnd();
+                _logger.Error("发送系统通知失败: {Error}", error);
+            }
+            else
+            {
+                _logger.Information("已发送系统通知: {Title}", title);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "发送系统通知失败: {Title}", title);
+        }
+    }
 }

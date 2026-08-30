@@ -41,6 +41,11 @@ public class X11PlatformService : PlatformServiceBase
         SetLinuxLaunchAtStartup(enabled);
     }
 
+    public override void SendNotification(string title, string message)
+    {
+        LinuxNotificationService.Send(title, message);
+    }
+
     private void SetLinuxLaunchAtStartup(bool enabled)
     {
         try

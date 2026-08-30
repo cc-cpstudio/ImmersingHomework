@@ -112,4 +112,82 @@ public class WindowsPlatformService : PlatformServiceBase
             _logger.Error(ex, "Failed to set launch at startup");
         }
     }
+
+    public override void SendNotification(string title, string message)
+    {
+        try
+        {
+            var hwnd = Process.GetCurrentProcess().MainWindowHandle;
+            if (hwnd == IntPtr.Zero)
+            {
+                _logger.Warning("无法获取窗口句柄，跳过系统通知");
+                return;
+            }
+
+            var data = new NotifyIconData
+            {
+                cbSize = (uint)Marshal.SizeOf<NotifyIconData>(),
+                hWnd = hwnd,
+                uID = 0x0001,
+                uFlags = NotifyIconFlags.Info,
+                szInfo = message,
+                szInfoTitle = title,
+                uTimeout = 10000
+            };
+
+            if (!Shell_NotifyIcon(NotifyIconMessage.Add, ref data))
+            {
+                _logger.Warning("添加通知图标失败，系统通知可能无法显示");
+                return;
+            }
+
+            Shell_NotifyIcon(NotifyIconMessage.Delete, ref data);
+            _logger.Information("已发送系统通知: {Title}", title);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "发送系统通知失败: {Title}", title);
+        }
+    }
+
+    [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+    private static extern bool Shell_NotifyIcon(NotifyIconMessage dwMessage, ref NotifyIconData lpData);
+
+    private enum NotifyIconMessage : uint
+    {
+        Add = 0x00000000,
+        Delete = 0x00000002
+    }
+
+    [Flags]
+    private enum NotifyIconFlags : uint
+    {
+        Message = 0x00000001,
+        Icon = 0x00000002,
+        Tip = 0x00000004,
+        Info = 0x00000010
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    private struct NotifyIconData
+    {
+        public uint cbSize;
+        public IntPtr hWnd;
+        public uint uID;
+        public NotifyIconFlags uFlags;
+        public uint uCallbackMessage;
+        public IntPtr hIcon;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+        public string szTip;
+        public uint dwState;
+        public uint dwStateMask;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+        public string szInfo;
+        public uint uTimeout;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
+        public string szInfoTitle;
+        public uint dwInfoFlags;
+        public Guid guidItem;
+        public IntPtr hBalloonIcon;
+    }
 }
