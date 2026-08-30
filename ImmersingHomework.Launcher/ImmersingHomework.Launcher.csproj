@@ -5,6 +5,28 @@
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <AssemblyName>Launcher</AssemblyName>
     </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../ImmersingHomework/ImmersingHomework.csproj"
+                          ReferenceOutputAssembly="false"
+                          Private="false" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <MainProjectOutputDir>$(MSBuildProjectDirectory)/../ImmersingHomework/bin/$(Configuration)/net10.0</MainProjectOutputDir>
+    </PropertyGroup>
+
+    <Target Name="StageMainProjectOutput" AfterTargets="Build">
+        <ItemGroup>
+            <MainProjectFiles Include="$(MainProjectOutputDir)/**/*"
+                              Exclude="$(MainProjectOutputDir)/Data/**;$(MainProjectOutputDir)/Logs/**;$(MainProjectOutputDir)/Outputs/**;$(MainProjectOutputDir)/Temp/**;$(MainProjectOutputDir)/win-x64/**;$(MainProjectOutputDir)/publish/**" />
+        </ItemGroup>
+        <Copy SourceFiles="@(MainProjectFiles)"
+              DestinationFolder="$(OutDir)ImmersingHomework/%(RecursiveDir)"
+              SkipUnchangedFiles="true" />
+        <MakeDir Directories="$(OutDir)Data;$(OutDir)Outputs;$(OutDir)Logs;$(OutDir)Update" />
+    </Target>
 
 </Project>

@@ -17,10 +17,12 @@ public static class UpdateService
 {
     private static readonly ILogger _logger = Log.ForContext(typeof(UpdateService));
 
-    // TODO: 以下配置由发布中心（ARC）分配，发布前请填写
-    private const string ReleaseCenterUrl = "https://arc.iedu.top";
+    private const string ReleaseCenterUrl = "https://arc.ieducation.top";
     private const string SoftwareKey = "ImmersingHomework";
     private const int ChannelCode = 0;
+
+    // 与 Launcher.exe 约定：更新下载完成后写入此标记文件，供 Launcher 在下次启动时应用更新
+    private const string UpdateFlagFileName = "update.flag";
 
     public static SoftwareVersion GetCurrentVersion()
     {
@@ -114,12 +116,34 @@ public static class UpdateService
         var downloadService = new FileDownloadService();
         await downloadService.DownloadRelease(release, fileLocation, progress ?? new Progress<double>(), ct);
         _logger.Information("更新下载完成: {FileLocation}", fileLocation);
+
+        WriteUpdateFlag();
         return fileLocation;
     }
 
     public static string GetUpdateDirectory(string version)
     {
         return Path.Combine(Directory.GetCurrentDirectory(), "Temp", $"Update_v{version}");
+    }
+
+    // 在 Launcher.exe 同目录下写入更新标记文件，Launcher 下次启动时会应用更新
+    public static void WriteUpdateFlag()
+    {
+        var flagPath = GetUpdateFlagPath();
+        try
+        {
+            File.WriteAllText(flagPath, DateTime.Now.ToString("O"));
+            _logger.Information("已写入更新标记文件: {FlagPath}", flagPath);
+        }
+        catch (Exception e)
+        {
+            _logger.Warning(e, "写入更新标记文件失败: {FlagPath}", flagPath);
+        }
+    }
+
+    public static string GetUpdateFlagPath()
+    {
+        return Path.Combine(Directory.GetCurrentDirectory(), UpdateFlagFileName);
     }
 
     private static string GetFileNameFromUrl(string url, string version)
