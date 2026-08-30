@@ -8,6 +8,7 @@ using AntonReleaseCenter.Core.DTOs;
 using AntonReleaseCenter.Core.Models;
 using AntonReleaseCenter.SoftwareSDK.Model;
 using AntonReleaseCenter.SoftwareSDK.Services;
+using ImmersingHomework.Models;
 using Serilog;
 using SoftwareVersion = AntonReleaseCenter.Core.Models.Version;
 
@@ -17,9 +18,8 @@ public static class UpdateService
 {
     private static readonly ILogger _logger = Log.ForContext(typeof(UpdateService));
 
-    private const string ReleaseCenterUrl = "https://arc.ieducation.top";
+    private const string ReleaseCenterUrl = "http://47.122.121.60:5000";
     private const string SoftwareKey = "ImmersingHomework";
-    private const int ChannelCode = 0;
 
     // 与 Launcher.exe 约定：更新下载完成后写入此标记文件，供 Launcher 在下次启动时应用更新
     private const string UpdateFlagFileName = "update.flag";
@@ -44,33 +44,41 @@ public static class UpdateService
                 : PlatformEnum.MacOS_Intel;
         if (OperatingSystem.IsLinux())
             return Environment.Is64BitOperatingSystem ? PlatformEnum.AppImage_x64 : PlatformEnum.AppImage_x86;
-        return PlatformEnum.Windows_x64;
+        throw new PlatformNotSupportedException();
     }
 
     public static async Task<CheckUpdateResponse?> CheckUpdateAsync(CancellationToken ct = default)
     {
-        var configure = new Configure
+        try
         {
-            Url = ReleaseCenterUrl,
-            SoftwareKey = SoftwareKey,
-            ChannelCode = ChannelCode,
-            Platform = GetCurrentPlatform()
-        };
+            var configure = new Configure
+            {
+                Url = ReleaseCenterUrl,
+                SoftwareKey = SoftwareKey,
+                ChannelCode = (int)AppSettings.Instance.UpdateChannel.Value,
+                Platform = GetCurrentPlatform()
+            };
 
-        var service = new UpdateCheckService(App.HttpClient, configure);
-        var currentVersion = GetCurrentVersion();
-        _logger.Information("开始检查更新，当前版本: {Version}，平台: {Platform}", currentVersion, configure.Platform);
+            var service = new UpdateCheckService(App.HttpClient, configure);
+            var currentVersion = GetCurrentVersion();
+            _logger.Information("开始检查更新，当前版本: {Version}，平台: {Platform}", currentVersion, configure.Platform);
 
-        var result = await service.CheckUpdateAsync(currentVersion.ToString(), ct: ct);
-        if (result is null)
+            var result = await service.CheckUpdateAsync(currentVersion.ToString(), ct: ct);
+            if (result is null)
+            {
+                _logger.Information("未获取到更新信息");
+                return null;
+            }
+
+            _logger.Information("检查更新完成，是否有更新: {HasUpdate}，最新版本: {LatestVersion}，是否强制更新: {IsForceUpdate}",
+                result.HasUpdate, result.LatestVersion, result.IsForceUpdate);
+            return result;
+        }
+        catch (NotSupportedException)
         {
-            _logger.Information("未获取到更新信息");
+            _logger.Error("平台不受支持");
             return null;
         }
-
-        _logger.Information("检查更新完成，是否有更新: {HasUpdate}，最新版本: {LatestVersion}，是否强制更新: {IsForceUpdate}",
-            result.HasUpdate, result.LatestVersion, result.IsForceUpdate);
-        return result;
     }
 
     public static async Task<string?> DownloadUpdateAsync(

@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Media;
+using ImmersingHomework.Enums;
 using ImmersingHomework.Services;
 using ImmersingHomework.Shared.Models;
 using Serilog;
@@ -51,6 +52,11 @@ public class AppSettings
     public ObservableProperty<int> AfterSchoolShowMainWindowWaitSecond { get; set; } = new(120);
     
     public ObservableProperty<bool> ShowHomeworkBeforeFirstClassNextDay { get; set; } = new(false);
+
+    public ObservableProperty<UpdateChannel> UpdateChannel { get; set; } = new(Enums.UpdateChannel.Stable);
+
+    public ObservableProperty<UpdateCheckBehavior> UpdateCheckBehavior { get; set; } =
+        new(Enums.UpdateCheckBehavior.NoticeImmediately);
     
     public ObservableProperty<int> FloatingButtonPositionX { get; set; } = new(100);
     

@@ -52,6 +52,9 @@ public partial class SettingsWindow : FAAppWindow
             case "Backup":
                 ContentFrame.Navigate(typeof(BackupSettingsPage));
                 break;
+            case "Update":
+                ContentFrame.Navigate(typeof(UpdateSettingsPage));
+                break;
         }
     }
 }
