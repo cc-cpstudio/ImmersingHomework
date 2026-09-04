@@ -208,7 +208,7 @@ public partial class App : Application
         if (trayIcons.Count > 0)
         {
             _trayIcon = trayIcons[0];
-            _trayIcon.ToolTipText = "ImmersingHomework";
+            _trayIcon.ToolTipText = "方圆作业板";
             
             if (_trayIcon.Menu != null && _trayIcon.Menu.Items.Count > 0)
             {
@@ -456,7 +456,7 @@ public partial class App : Application
 
     private void SendUpdateNotification(CheckUpdateResponse update)
     {
-        var title = "ImmersingHomework 更新";
+        var title = "方圆作业板 更新";
         var body = $"发现新版本 {update.LatestVersion}。";
         if (!string.IsNullOrWhiteSpace(update.UpdateLog))
             body += $"\n{update.UpdateLog}";

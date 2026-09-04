@@ -172,7 +172,7 @@ public class UafPdfService
                 NewPage();
 
             currentY += ContentSpacing * 2;
-            var footerText = "由 ImmersingHomework 生成，由 UAF 提供技术支持";
+            var footerText = "由 方圆作业板 生成，由 UAF 提供技术支持";
             var footerWidth = fontRegular.GetWidth(footerText, FooterFontSize);
             var footerGray = new PdfDeviceRgb(166f / 255, 166f / 255, 166f / 255);
             DrawCanvasText(currentPage, footerText, fontRegular, FooterFontSize, (PageWidth - footerWidth) / 2, currentY, footerGray);

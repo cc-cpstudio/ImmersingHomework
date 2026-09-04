@@ -8,7 +8,7 @@ using Microsoft.Maui.ApplicationModel;
 namespace ImmersingHomework.Mobile.Android;
 
 [Activity(
-    Label = "ImmersingHomework.Mobile.Android",
+    Label = "方圆作业板",
     Theme = "@style/MyTheme.NoActionBar",
     Icon = "@drawable/icon",
     MainLauncher = true,

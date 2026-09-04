@@ -38,7 +38,7 @@ internal static class LinuxNotificationService
                 "susssasa{sv}i",
                 MessageFlags.None);
 
-            writer.WriteString("ImmersingHomework");
+            writer.WriteString("方圆作业板");
             writer.WriteUInt32(0);
             writer.WriteString(string.Empty);
             writer.WriteString(title);

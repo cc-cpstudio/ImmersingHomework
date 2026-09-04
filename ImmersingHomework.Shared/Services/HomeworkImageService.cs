@@ -229,7 +229,7 @@ public class HomeworkImageService
 
         elements.Add(new TextElement
         {
-            Text = "由 ImmersingHomework 生成",
+            Text = "由 方圆作业板 生成",
             Font = _fontRegular!,
             LineHeight = 19,
             IsLast = true,

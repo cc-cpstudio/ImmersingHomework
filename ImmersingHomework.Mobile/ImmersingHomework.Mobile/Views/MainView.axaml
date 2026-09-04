@@ -6,7 +6,7 @@
              x:Class="ImmersingHomework.Mobile.Views.MainView">
     <ContentControl x:Name="RootContent">
         <StackPanel x:Name="HomePanel" Orientation="Vertical" Spacing="16" Margin="16">
-            <TextBlock FontSize="24">ImmersingHomework 移动端</TextBlock>
+            <TextBlock FontSize="24">方圆作业板 移动端</TextBlock>
             <TextBlock FontSize="16">请扫描一体机端提供的作业二维码以继续。</TextBlock>
             <Button HorizontalAlignment="Stretch" Height="48" Click="OnScanClicked">扫描</Button>
         </StackPanel>

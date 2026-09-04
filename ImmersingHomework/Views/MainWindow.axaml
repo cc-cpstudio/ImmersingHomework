@@ -6,7 +6,7 @@
         xmlns:controls="clr-namespace:ImmersingHomework.Controls"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ImmersingHomework.Views.MainWindow"
-        Title="ImmersingHomework" Background="#ECECEC"
+        Title="方圆作业板" Background="#ECECEC"
         Icon="avares://ImmersingHomework/Assets/icon.png"
         RequestedThemeVariant="Light">
         <Grid RowDefinitions="Auto,*,Auto" Margin="16">

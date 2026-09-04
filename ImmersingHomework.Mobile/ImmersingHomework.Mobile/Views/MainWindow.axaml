@@ -6,6 +6,6 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ImmersingHomework.Mobile.Views.MainWindow"
         Icon="/Assets/Icon.png"
-        Title="ImmersingHomework.Mobile">
+        Title="方圆作业板">
         <views:MainView />
 </Window>

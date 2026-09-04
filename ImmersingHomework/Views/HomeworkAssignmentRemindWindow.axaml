@@ -5,12 +5,12 @@
         xmlns:wnd="clr-namespace:FluentAvalonia.UI.Windowing;assembly=FluentAvalonia"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ImmersingHomework.Views.HomeworkAssignmentRemindWindow"
-        Title="ImmersingHomework - 作业布置提醒">
+        Title="方圆作业板 - 作业布置提醒">
     <StackPanel Orientation="Vertical" Spacing="8" Margin="16">
         <TextBlock FontSize="32" FontWeight="Bold">作业布置提醒</TextBlock>
         <TextBlock x:Name="DetailTextBlock" TextWrapping="WrapWithOverflow"/>
         <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-            <Button Grid.Column="0" HorizontalAlignment="Stretch" Click="OpenButton_OnClick">进入 ImmersingHomework</Button>
+            <Button Grid.Column="0" HorizontalAlignment="Stretch" Click="OpenButton_OnClick">进入 方圆作业板</Button>
             <Button Grid.Column="1" HorizontalAlignment="Stretch" Click="CloseButton_OnClick">取消</Button>
         </Grid>
     </StackPanel>

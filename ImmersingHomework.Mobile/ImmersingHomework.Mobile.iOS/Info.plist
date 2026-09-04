@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDisplayName</key>
-	<string>ImmersingHomework.Mobile</string>
+	<string>方圆作业板</string>
 	<key>CFBundleIdentifier</key>
 	<string>companyName.ImmersingHomework.Mobile</string>
 	<key>CFBundleShortVersionString</key>

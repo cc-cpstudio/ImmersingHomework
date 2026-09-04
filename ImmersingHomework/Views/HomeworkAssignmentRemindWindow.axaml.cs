@@ -12,7 +12,7 @@ public partial class HomeworkAssignmentRemindWindow : FAAppWindow
     public HomeworkAssignmentRemindWindow()
     {
         InitializeComponent();
-        DetailTextBlock.Text = $"请将 {ClassIslandService.Instance.GetPreviousClassSubject()?.Name ?? ""} 作业布置在 ImmersingHomework 作业板上。";
+        DetailTextBlock.Text = $"请将 {ClassIslandService.Instance.GetPreviousClassSubject()?.Name ?? ""} 作业布置于 方圆作业板。";
     }
 
     private void OpenButton_OnClick(object? sender, RoutedEventArgs e)
