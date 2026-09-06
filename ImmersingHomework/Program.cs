@@ -33,7 +33,11 @@ class Program
                 retainedFileCountLimit: 45
             )
             .CreateLogger();
-
+        
+#if Platforms_Windows
+        OSKIntergration.Intergrate();
+#endif
+        
         try
         {
             var lockDir = Path.Combine(
