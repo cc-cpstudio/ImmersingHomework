@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# 桌面端（Windows / Linux / macOS）发布脚本 —— 发布 Launcher 工程（含主程序捆绑目录）。
-# 对每个平台单独发布，并将每个平台的产物压缩为：
+# 桌面端（Windows / Linux / macOS）发布脚本 —— 发布 Launcher + ImmersingHomework 主程序捆绑包。
+# 每个平台依次发布主程序（到 ImmersingHomework/ 子目录）与 Launcher（同目录），再将整个平台目录压缩为：
 #   ImmersingHomework-<版本>-<平台>.zip   （版本自动读取自 ImmersingHomework.csproj）
 #
 # ⚠️ 重要：不要对 ImmersingHomework.sln 带 -r 发布！解决方案里包含 Mobile(Android/iOS) 工程，
@@ -61,14 +61,29 @@ for rid in "${RID_LIST[@]}"; do
     publish_dir="$OUT_DIR/$rid"
     zip_file="$OUT_DIR/ImmersingHomework-$VERSION-$rid.zip"
 
-    echo "==> 发布 $rid (Config=$CONFIG, SelfContained=$SELF_CONTAINED)"
+    echo "==> [$rid] 清理并重建输出目录"
+    rm -rf "$publish_dir"
+    mkdir -p "$publish_dir"
+
+    echo "==> [$rid] 发布主程序 ImmersingHomework -> $publish_dir/ImmersingHomework"
+    dotnet publish "$ROOT/ImmersingHomework/ImmersingHomework.csproj" \
+        -c "$CONFIG" \
+        -r "$rid" \
+        --self-contained "$SELF_CONTAINED" \
+        -o "$publish_dir/ImmersingHomework"
+
+    echo "==> [$rid] 发布启动器 Launcher -> $publish_dir（跳过工程内暂存，避免覆盖/缺主程序）"
     dotnet publish "$ROOT/ImmersingHomework.Launcher/ImmersingHomework.Launcher.csproj" \
         -c "$CONFIG" \
         -r "$rid" \
         --self-contained "$SELF_CONTAINED" \
+        -p:SkipStageMainProjectOutput=true \
         -o "$publish_dir"
 
-    echo "==> 压缩 $rid -> ${zip_file##*/}"
+    echo "==> [$rid] 创建运行数据目录"
+    mkdir -p "$publish_dir/Data" "$publish_dir/Outputs" "$publish_dir/Logs" "$publish_dir/Update"
+
+    echo "==> [$rid] 压缩 -> ${zip_file##*/}"
     pack_zip "$publish_dir" "$zip_file"
 done
 

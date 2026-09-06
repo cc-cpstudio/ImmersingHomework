@@ -17,16 +17,22 @@
     </ItemGroup>
 
     <PropertyGroup>
-        <!-- 主工程输出目录：带 -r/自包含 发布时产物位于 net10.0/<RuntimeIdentifier> 子目录 -->
+        <!-- 主工程输出目录基址：带 -r/自包含 发布时产物位于 net10.0/<RuntimeIdentifier> 子目录 -->
         <MainProjectBaseDir>$(MSBuildProjectDirectory)/../ImmersingHomework/bin/$(Configuration)/net10.0</MainProjectBaseDir>
-        <MainProjectOutputDir>$(MainProjectBaseDir)</MainProjectOutputDir>
-        <MainProjectOutputDir Condition="'$(RuntimeIdentifier)' != '' and Exists('$(MainProjectBaseDir)/$(RuntimeIdentifier)')">$(MainProjectBaseDir)/$(RuntimeIdentifier)</MainProjectOutputDir>
     </PropertyGroup>
 
-    <Target Name="StageMainProjectOutput" AfterTargets="Build">
-        <ItemGroup>
-            <MainProjectFiles Include="$(MainProjectOutputDir)/**/*"
-                              Exclude="$(MainProjectOutputDir)/Data/**;$(MainProjectOutputDir)/Logs/**;$(MainProjectOutputDir)/Outputs/**;$(MainProjectOutputDir)/Temp/**;$(MainProjectOutputDir)/win-x64/**;$(MainProjectOutputDir)/publish/**" />
+    <!-- 暂存主程序到输出目录的 ImmersingHomework/ 子目录。
+         目录选择必须放在 Target 执行期（引用工程构建完成之后）判定，否则干净构建时
+         <rid> 目录尚不存在会选错。用 -p:SkipStageMainProjectOutput=true 可跳过（由发布脚本自行分两步发布）。 -->
+    <Target Name="StageMainProjectOutput" AfterTargets="Build"
+            Condition="'$(SkipStageMainProjectOutput)' != 'true'">
+        <ItemGroup Condition="'$(RuntimeIdentifier)' != '' and Exists('$(MainProjectBaseDir)/$(RuntimeIdentifier)')">
+            <MainProjectFiles Include="$(MainProjectBaseDir)/$(RuntimeIdentifier)/**/*"
+                              Exclude="$(MainProjectBaseDir)/$(RuntimeIdentifier)/Data/**;$(MainProjectBaseDir)/$(RuntimeIdentifier)/Logs/**;$(MainProjectBaseDir)/$(RuntimeIdentifier)/Outputs/**;$(MainProjectBaseDir)/$(RuntimeIdentifier)/Temp/**;$(MainProjectBaseDir)/$(RuntimeIdentifier)/win-x64/**;$(MainProjectBaseDir)/$(RuntimeIdentifier)/publish/**" />
+        </ItemGroup>
+        <ItemGroup Condition="'$(RuntimeIdentifier)' == '' or !Exists('$(MainProjectBaseDir)/$(RuntimeIdentifier)')">
+            <MainProjectFiles Include="$(MainProjectBaseDir)/**/*"
+                              Exclude="$(MainProjectBaseDir)/Data/**;$(MainProjectBaseDir)/Logs/**;$(MainProjectBaseDir)/Outputs/**;$(MainProjectBaseDir)/Temp/**;$(MainProjectBaseDir)/win-x64/**;$(MainProjectBaseDir)/publish/**" />
         </ItemGroup>
         <Copy SourceFiles="@(MainProjectFiles)"
               DestinationFolder="$(OutDir)ImmersingHomework/%(RecursiveDir)"
