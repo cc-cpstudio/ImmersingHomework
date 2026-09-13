@@ -1,7 +1,9 @@
+using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using ImmersingHomework.Enums;
 using ImmersingHomework.Models;
 using ImmersingHomework.Shared.Models;
 using Serilog;
@@ -25,6 +27,7 @@ public partial class BasicSettingsPage : UserControl
     public void Refresh()
     {
         LaunchAtStartupSwitch.IsChecked = AppSettings.Instance.LaunchAtStartup.Value;
+        ThemeModeComboBox.SelectedIndex = Convert.ToInt32(AppSettings.Instance.ThemeMode.Value);
     }
 
     private void LaunchAtStartupSwitch_OnIsCheckedChanged(object? sender, RoutedEventArgs e)
@@ -33,6 +36,16 @@ public partial class BasicSettingsPage : UserControl
         {
             _logger.Information("开机自启动设置变更: {Value}", LaunchAtStartupSwitch.IsChecked.Value);
             AppSettings.Instance.LaunchAtStartup.Value = LaunchAtStartupSwitch.IsChecked.Value;
+        }
+    }
+
+    private void ThemeModeComboBox_OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (ThemeModeComboBox.SelectedIndex >= 0)
+        {
+            var mode = (ThemeMode)ThemeModeComboBox.SelectedIndex;
+            _logger.Information("外观样式设置变更: {Mode}", mode);
+            AppSettings.Instance.ThemeMode.Value = mode;
         }
     }
 }

@@ -8,6 +8,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using ImmersingHomework.Abstractions;
@@ -67,6 +68,9 @@ public partial class App : Application
 
         AppSettings.Instance.Initialize();
         _logger.Information("应用设置已初始化");
+
+        ApplyThemeMode();
+        SubscribeToThemeModeChanges();
 
         if (AppSettings.Instance.EnableClassIslandIPCService.Value)
         {
@@ -199,6 +203,27 @@ public partial class App : Application
             {
                 _platformService.SetLaunchAtStartup(newValue);
             }
+        };
+    }
+
+    private void ApplyThemeMode()
+    {
+        var themeMode = AppSettings.Instance.ThemeMode.Value;
+        _logger.Information("应用外观样式设置: {Value}", themeMode);
+        RequestedThemeVariant = themeMode switch
+        {
+            ThemeMode.Light => ThemeVariant.Light,
+            ThemeMode.Dark => ThemeVariant.Dark,
+            _ => ThemeVariant.Default
+        };
+    }
+
+    private void SubscribeToThemeModeChanges()
+    {
+        AppSettings.Instance.ThemeMode.ValueChanged += (newValue) =>
+        {
+            _logger.Information("外观样式设置变更，新值: {Value}", newValue);
+            Dispatcher.UIThread.Post(ApplyThemeMode);
         };
     }
 

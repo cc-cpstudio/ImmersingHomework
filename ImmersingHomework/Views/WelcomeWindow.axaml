@@ -7,8 +7,7 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ImmersingHomework.Views.WelcomeWindow"
         Title="方圆作业板 - 欢迎向导"
-        Icon="avares://ImmersingHomework/Assets/icon.png"
-        RequestedThemeVariant="Light">
+        Icon="avares://ImmersingHomework/Assets/icon.png">
         <Grid RowDefinitions="*,Auto" Margin="8">
                 <fa:FAFrame Grid.Row="0" x:Name="Frame"/>
                 <Grid Row="1" ColumnDefinitions="Auto,*,Auto">

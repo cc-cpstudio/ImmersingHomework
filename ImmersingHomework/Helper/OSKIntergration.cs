@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
@@ -14,11 +15,14 @@ namespace ImmersingHomework.Helper;
 
 // https://github.com/AvaloniaUI/Avalonia/issues/10136#issuecomment-2338492804
 // https://gist.github.com/tobyfirth/65c5372be2e659141c1c4b7d99e3e268
+[SupportedOSPlatform("windows")]
 public static class OSKIntegration
 {
     private static readonly Dictionary<IInputPane, TopLevel> tlMap = new();
     private static readonly Subject<(TextBox t, bool state)> keyboard = new();
     private static bool _alreadyDone;
+
+    private const uint REGDB_E_CLASSNOTREG = 0x80040154;
 
     public static void Integrate()
     {
@@ -136,7 +140,7 @@ public static class OSKIntegration
         }
         catch(COMException e)
         {
-            if ((uint)e.HResult == HRESULT.REGDB_E_CLASSNOTREG)
+            if ((uint)e.HResult == REGDB_E_CLASSNOTREG)
             {
                 Process p = new()
                 {
