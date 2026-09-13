@@ -26,4 +26,16 @@
                           Private="false" />
     </ItemGroup>
 
+    <Target Name="CopyMainApp" AfterTargets="Build">
+        <PropertyGroup>
+            <MainAppOutput>$(MSBuildThisFileDirectory)..\ImmersingHomework\bin\$(Configuration)\net10.0\</MainAppOutput>
+        </PropertyGroup>
+        <RemoveDir Directories="$(OutDir)ImmersingHomework" />
+        <ItemGroup>
+            <MainAppFiles Include="$(MainAppOutput)**\*" />
+        </ItemGroup>
+        <Copy SourceFiles="@(MainAppFiles)"
+              DestinationFiles="@(MainAppFiles->'$(OutDir)ImmersingHomework\%(RecursiveDir)%(Filename)%(Extension)')" />
+    </Target>
+
 </Project>
